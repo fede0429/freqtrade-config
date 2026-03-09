@@ -1,0 +1,61 @@
+{
+  "as_of": "2026-03-08",
+  "built_at": "2026-03-08T22:33:00.416439+00:00",
+  "rollback_status": "required",
+  "rollback_reason": "rollback_required_before_canary",
+  "trigger_summary": {
+    "budget_guard_status": "blocked",
+    "failed_checks": [
+      "canary_readiness_verdict",
+      "startup_channel_match",
+      "open_positions_within_limit",
+      "notional_within_limit",
+      "drawdown_within_limit"
+    ],
+    "startup_mode": "armed",
+    "preflight_approved": true,
+    "program_overall_status": "blocked",
+    "daily_guard_status": "healthy"
+  },
+  "required_actions": [
+    "promote to canary only after canary readiness scorecard reaches ready",
+    "launch canary only through a canary release profile and startup bundle",
+    "reduce open positions to the canary budget limit",
+    "cut notional exposure to the canary budget cap",
+    "resolve drawdown breach before canary launch",
+    "freeze canary promotion until all failed checks are cleared",
+    "retain this rollback pack with the corresponding canary readiness pack for audit"
+  ],
+  "artifacts": [
+    {
+      "role": "budget_guard",
+      "source_path": "reports/canary/readiness/canary_budget_guard_2026-03-08.json",
+      "archived_path": "reports/canary/rollback/rollback_pack_2026-03-08/canary_budget_guard_2026-03-08.json"
+    },
+    {
+      "role": "readiness_manifest",
+      "source_path": "reports/canary/readiness/canary_readiness_pack_2026-03-08/canary_readiness_manifest.json",
+      "archived_path": "reports/canary/rollback/rollback_pack_2026-03-08/canary_readiness_manifest.json"
+    },
+    {
+      "role": "program_status",
+      "source_path": "reports/roadmap/program_status_2026-03-08.json",
+      "archived_path": "reports/canary/rollback/rollback_pack_2026-03-08/program_status_2026-03-08.json"
+    },
+    {
+      "role": "startup_bundle",
+      "source_path": "release/runtime/startup_bundle_spot_paper.json",
+      "archived_path": "reports/canary/rollback/rollback_pack_2026-03-08/startup_bundle_spot_paper.json"
+    },
+    {
+      "role": "preflight_report",
+      "source_path": "reports/deploy/preflight_spot_paper.json",
+      "archived_path": "reports/canary/rollback/rollback_pack_2026-03-08/preflight_spot_paper.json"
+    },
+    {
+      "role": "daily_report",
+      "source_path": "reports/operations/daily/studio_daily_report_2026-03-08.json",
+      "archived_path": "reports/canary/rollback/rollback_pack_2026-03-08/studio_daily_report_2026-03-08.json"
+    }
+  ]
+}

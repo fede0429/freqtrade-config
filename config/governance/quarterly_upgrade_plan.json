@@ -1,0 +1,64 @@
+{
+  "program_name": "studio-trading-system-q2-upgrade",
+  "as_of": "2026-03-08",
+  "mission": "Move from paper-ready automated trading infrastructure to governed production rollout with auditable promotion gates.",
+  "north_star": {
+    "primary": "Stable paper -> canary -> prod promotion path",
+    "secondary": [
+      "Daily operations visibility",
+      "Unified risk gating",
+      "Release discipline",
+      "Strategy lifecycle governance"
+    ]
+  },
+  "phases": [
+    {
+      "phase": "Phase 1",
+      "weeks": [1, 2, 3, 4],
+      "focus": "Connect real runtime inputs",
+      "deliverables": [
+        "wire scanner to real ccxt data",
+        "wire reporting to real sqlite trade database",
+        "enforce preflight before paper deployment",
+        "stabilize runtime config rendering"
+      ],
+      "exit_criteria": [
+        "paper runs 7 consecutive days",
+        "daily report generated automatically",
+        "preflight blocks invalid paper release"
+      ]
+    },
+    {
+      "phase": "Phase 2",
+      "weeks": [5, 6, 7, 8],
+      "focus": "Canary and audit controls",
+      "deliverables": [
+        "introduce canary allocation budget",
+        "add risk event timeline",
+        "build promotion scorecard",
+        "add rollback checklist"
+      ],
+      "exit_criteria": [
+        "canary budget isolated",
+        "promotion scorecard generated per strategy",
+        "risk events present in daily operations report"
+      ]
+    },
+    {
+      "phase": "Phase 3",
+      "weeks": [9, 10, 11, 12],
+      "focus": "Production release discipline",
+      "deliverables": [
+        "prod approval checklist",
+        "weekly strategy review ritual",
+        "prod release sign-off template",
+        "post-release audit pack"
+      ],
+      "exit_criteria": [
+        "prod release approved only when all gates pass",
+        "weekly review artifacts retained",
+        "one-click operational status pack generated"
+      ]
+    }
+  ]
+}

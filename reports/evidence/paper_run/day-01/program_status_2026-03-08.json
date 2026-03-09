@@ -1,0 +1,87 @@
+{
+  "as_of": "2026-03-08",
+  "overall_status": "in_progress",
+  "milestones": [
+    {
+      "name": "release_gate",
+      "status": "ready",
+      "evidence": [
+        "reports/deploy/preflight_spot_paper.json",
+        "release/runtime/startup_bundle_spot_paper.json"
+      ],
+      "next_actions": [
+        "Re-render config, risk, scanner, reporting, and strategy manifests before startup.",
+        "Capture preflight artifact and attach it to the operating log."
+      ],
+      "details": {
+        "approved": true,
+        "mode": "release",
+        "startup_mode": "armed"
+      }
+    },
+    {
+      "name": "market_intelligence",
+      "status": "in_progress",
+      "evidence": [
+        "reports/scanner/latest_scan.json"
+      ],
+      "next_actions": [
+        "switch scanner source from fixture to live exchange data"
+      ],
+      "details": {
+        "source_mode": "fixture",
+        "selected_count": 3,
+        "candidate_count": 6,
+        "market_regime": "trend"
+      }
+    },
+    {
+      "name": "operations_reporting",
+      "status": "ready",
+      "evidence": [
+        "reports/operations/daily/studio_daily_report_2026-03-08.json"
+      ],
+      "next_actions": [
+        "continue daily report automation"
+      ],
+      "details": {
+        "pnl_input_type": "sqlite",
+        "closed_trades": 6,
+        "open_positions": 3
+      }
+    },
+    {
+      "name": "startup_chain",
+      "status": "ready",
+      "evidence": [
+        "release/runtime/startup_bundle_spot_paper.json"
+      ],
+      "next_actions": [
+        "Review preflight report before starting trader.",
+        "Do not bypass blocked startup without explicitly fixing failed checks."
+      ],
+      "details": {
+        "startup_mode": "armed",
+        "service_name": "freqtrade-spot",
+        "release_channel": "paper"
+      }
+    },
+    {
+      "name": "paper_run_validation",
+      "status": "in_progress",
+      "evidence": [],
+      "next_actions": [
+        "run 7 consecutive paper days and archive scanner, report, and preflight outputs each day",
+        "confirm guard_status stays healthy throughout the validation window",
+        "review any strategy with unexplained exposure or repeated losses before canary promotion"
+      ],
+      "details": {
+        "guard_status": "healthy",
+        "tradable_pairs": 3,
+        "preflight_approved": true,
+        "days_completed": 0,
+        "days_required": 7
+      }
+    }
+  ]
+}

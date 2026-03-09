@@ -1,0 +1,155 @@
+{
+  "as_of_date": null,
+  "overall_status": "attention",
+  "stability": {
+    "score": 80,
+    "status": "watch",
+    "duplicate_dispatches": 0,
+    "filled_unreconciled_orders": 2,
+    "execution_trace_coverage": 1.0,
+    "pipeline_trace_coverage": {
+      "db_path": "reports/execution/dispatch_state.sqlite",
+      "tables": {},
+      "overall_ratio": 0.0
+    }
+  },
+  "alerts": {
+    "severity": "high",
+    "alert_count": 1,
+    "incidents": [
+      {
+        "severity": "high",
+        "code": "filled_unreconciled_orders",
+        "message": "2 filled orders have no reconciliation row",
+        "priority": 100,
+        "owner": "execution-ops",
+        "auto_repairable": true,
+        "recommended_script": "scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>",
+        "summary": "2 filled orders have no reconciliation row",
+        "why_it_matters": "Filled orders without trade reconciliation break realized PnL attribution and make execution quality metrics unreliable.",
+        "remediation_steps": [
+          "Run the auto-repair script with a trades DB or execution profile to retry reconciliation for unreconciled filled orders.",
+          "If strong-key mapping is missing, verify external_order_id / venue_order_id propagation from the real executor.",
+          "Replay one affected order to confirm dispatch, fill sync, and reconciliation events line up."
+        ]
+      }
+    ],
+    "disposition": {
+      "status": "page-now",
+      "highest_severity": "high",
+      "auto_repairable_count": 1,
+      "owners": [
+        "execution-ops"
+      ]
+    },
+    "next_actions": [
+      "filled_unreconciled_orders: 2 filled orders have no reconciliation row Run `scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>`."
+    ]
+  },
+  "signal_pipeline": {
+    "available": true,
+    "db_path": "reports/execution/dispatch_state.sqlite",
+    "execution_funnel": {
+      "signals": 0,
+      "decision_accept_or_reduce": 0,
+      "decision_delay_or_reject": 0,
+      "execution_dispatched": 0,
+      "execution_accepted": 0,
+      "execution_partial": 0,
+      "execution_filled": 0,
+      "execution_failed": 0,
+      "execution_cancelled": 0,
+      "execution_deduplicated": 0,
+      "reconciliation_strong_matched": 0,
+      "reconciliation_heuristic_matched": 0,
+      "shadow_opened": 0,
+      "shadow_closed": 0,
+      "decision_breakdown": {
+        "accept": 0,
+        "reduce": 0,
+        "delay": 0,
+        "reject": 0
+      }
+    },
+    "missed_alpha": {
+      "total_rejected_shadow": 0,
+      "profitable_rejected_shadow": 0,
+      "profitable_rejected_ratio": 0.0,
+      "avg_profitable_rejected_ratio": 0.0,
+      "best_rejected_ratio": 0.0,
+      "total_rejected_shadow_pnl_ratio": 0.0,
+      "strategy_missed_alpha_rank": []
+    },
+    "decision_to_fill": {},
+    "outcome_comparison": {},
+    "replace_cost_analysis": {
+      "replace_orders": 0,
+      "avg_replace_slippage_bps": 0.0,
+      "total_replace_fees": 0.0,
+      "avg_replace_price_move_bps": 0.0,
+      "replace_by_reason": []
+    },
+    "integrity_checks": {
+      "duplicate_dispatches": 0,
+      "orphan_orders": 0,
+      "orphan_dispatch_signals": 0,
+      "filled_unreconciled_orders": 0,
+      "state_anomalies": [],
+      "state_anomaly_count": 0
+    },
+    "traceability": {
+      "orders": 2,
+      "traced_orders": 2,
+      "trace_coverage_ratio": 1.0,
+      "distinct_runs": 1,
+      "distinct_traces": 2
+    },
+    "alert_summary": {
+      "severity": "high",
+      "alert_count": 1,
+      "incidents": [
+        {
+          "severity": "high",
+          "code": "filled_unreconciled_orders",
+          "message": "2 filled orders have no reconciliation row",
+          "priority": 100,
+          "owner": "execution-ops",
+          "auto_repairable": true,
+          "recommended_script": "scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>",
+          "summary": "2 filled orders have no reconciliation row",
+          "why_it_matters": "Filled orders without trade reconciliation break realized PnL attribution and make execution quality metrics unreliable.",
+          "remediation_steps": [
+            "Run the auto-repair script with a trades DB or execution profile to retry reconciliation for unreconciled filled orders.",
+            "If strong-key mapping is missing, verify external_order_id / venue_order_id propagation from the real executor.",
+            "Replay one affected order to confirm dispatch, fill sync, and reconciliation events line up."
+          ]
+        }
+      ],
+      "disposition": {
+        "status": "page-now",
+        "highest_severity": "high",
+        "auto_repairable_count": 1,
+        "owners": [
+          "execution-ops"
+        ]
+      },
+      "next_actions": [
+        "filled_unreconciled_orders: 2 filled orders have no reconciliation row Run `scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>`."
+      ]
+    },
+    "health_pack": {
+      "overall_status": "attention",
+      "recommended_actions": [
+        "filled_unreconciled_orders: 2 filled orders have no reconciliation row Run `scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>`."
+      ]
+    }
+  },
+  "recommended_actions": [
+    "filled_unreconciled_orders: 2 filled orders have no reconciliation row Run `scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>`."
+  ],
+  "replay_commands": [
+    "python apps/execution/replay_execution_trace.py --execution-db reports/execution/dispatch_state.sqlite --signal-pipeline-db reports/execution/dispatch_state.sqlite --order-id exec:dec-001",
+    "python apps/execution/replay_execution_trace.py --execution-db reports/execution/dispatch_state.sqlite --signal-pipeline-db reports/execution/dispatch_state.sqlite --decision-id dec-001",
+    "python apps/execution/replay_execution_trace.py --execution-db reports/execution/dispatch_state.sqlite --signal-pipeline-db reports/execution/dispatch_state.sqlite --signal-id sig-001"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "profile_name": "paper",
+  "release_channel": "paper",
+  "checks": {
+    "required_guard_status": "healthy",
+    "forbid_candidate_in_prod": false,
+    "forbid_dry_run_in_prod": false
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "dry_run": true,
+  "risk_budget_fraction": 0.35,
+  "telemetry_tag": "paper-prod-baseline"
+}

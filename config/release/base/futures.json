@@ -1,0 +1,14 @@
+{
+  "market_type": "futures",
+  "deployment_target": "trader_futures",
+  "checks": {
+    "max_prod_drawdown_ratio": 0.08,
+    "min_scanner_selected_pairs": 2
+  },
+  "paths": {
+    "risk_profile": "config/risk/runtime/futures.paper.json",
+    "reporting_profile": "config/reporting/runtime/futures.paper.json",
+    "trading_config": "config/runtime/futures.paper.dynamic.json",
+    "docker_compose": "docker/docker-compose.step6.yml"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "timezone": "Europe/Rome",
+  "studio_name": "Studio Trading System",
+  "reporting": {
+    "include_markdown": true,
+    "include_json": true,
+    "max_top_winners": 3,
+    "max_top_losers": 3,
+    "include_strategy_health": true,
+    "include_risk_events": true,
+    "include_scanner_summary": true
+  },
+  "paths": {
+    "scanner_report": "reports/scanner/latest_scan.json",
+    "strategy_manifest": "strategies/registry/deployment_manifest.json",
+    "risk_profile": "config/risk/runtime/spot.paper.json",
+    "output_dir": "reports/operations/daily",
+    "pnl_input": "/opt/trading-system/runtime/data/tradesv3_prod.sqlite"
+  },
+  "market_type": "futures",
+  "portfolio_scope": "studio_futures",
+  "summary_defaults": {
+    "benchmark_symbol": "BTC/USDT:USDT",
+    "capital_allocated_usd": 10000,
+    "cash_buffer_ratio": 0.4
+  },
+  "profile_name": "prod",
+  "risk_posture": "capital_at_risk",
+  "input_source": {
+    "type": "sqlite",
+    "db_path": "/opt/trading-system/runtime/data/tradesv3_prod.sqlite",
+    "as_of_date": "2026-03-08",
+    "equity_start": 25000,
+    "unrealized_buffer": 70.0,
+    "risk_events": [
+      {
+        "severity": "medium",
+        "type": "scanner_flag",
+        "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."
+      },
+      {
+        "severity": "medium",
+        "type": "release_watch",
+        "message": "Prod release remains gated until forbidden lifecycle stages are removed from deployment."
+      }
+    ]
+  }
+}

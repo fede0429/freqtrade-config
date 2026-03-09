@@ -1,0 +1,7 @@
+{
+  "budget_guard": {
+    "market_type": "spot",
+    "max_notional_usd": 1500,
+    "max_open_positions": 2
+  }
+}

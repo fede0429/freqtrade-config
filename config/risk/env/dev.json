@@ -1,0 +1,11 @@
+{
+  "risk_profile_name": "dev",
+  "guards": {
+    "daily_loss_limit_ratio": 0.05,
+    "weekly_loss_limit_ratio": 0.08,
+    "cooldown_minutes_after_guard_trip": 60
+  },
+  "execution": {
+    "require_scanner_approval": false
+  }
+}

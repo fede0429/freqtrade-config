@@ -1,0 +1,29 @@
+{
+  "strategy_name": "VolumeBreakoutStrategy",
+  "params": {
+    "trailing": {
+      "trailing_stop": true,
+      "trailing_stop_positive": 0.01,
+      "trailing_stop_positive_offset": 0.03,
+      "trailing_only_offset_is_reached": true
+    },
+    "max_open_trades": {
+      "max_open_trades": 2
+    },
+    "buy": {
+      "buy_lookback_period": 73,
+      "buy_vol_multiplier": 4.901
+    },
+    "roi": {
+      "0": 0.333,
+      "65": 0.125,
+      "190": 0.029,
+      "315": 0
+    },
+    "stoploss": {
+      "stoploss": -0.306
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2026-03-01 09:30:33.288662+00:00"
+}

@@ -1,0 +1,116 @@
+{
+  "==== FreqAI 配置片段 ====": "这是一个独立的配置片段，将其内容合并到 config_spot.json 中即可启用 FreqAI",
+  "==== 使用说明 ====": "将下方 freqai 对象整体复制到 config_spot.json 或 config_futures.json 的顶层",
+  "==== 升级路径 ====": "当前策略（规则驱动 + Hyperopt）→ 混合模式（规则 + AI 信号）→ 纯 FreqAI 策略",
+
+  "freqai": {
+
+    "==== 基础配置 ====": "",
+
+    "enabled": true,
+
+    "==== 训练参数 ====": "",
+    "train_period_days": 30,
+    "backtest_period_days": 7,
+    "live_retrain_hours": 168,
+    "identifier": "adaptive_meta_v1",
+    "feature_parameters": {
+      "include_timeframes": ["15m", "1h", "4h"],
+      "include_corr_pairlist": [
+        "BTC/USDT",
+        "ETH/USDT",
+        "BNB/USDT"
+      ],
+      "label_period_candles": 24,
+      "include_shifted_candidates": 3,
+      "DI_threshold": 0.9,
+      "weight_factor": 0.9,
+      "principal_component_analysis": false,
+      "use_SVM_to_remove_outliers": true,
+      "SVM_nu": 0.1,
+      "SVM_kernel": "rbf",
+      "svm_params": {
+        "nu": 0.1,
+        "kernel": "rbf",
+        "gamma": "scale"
+      },
+      "stratify_training_data": 0,
+      "indicator_max_period_candles": 200,
+      "indicator_periods_candles": [14, 21, 50],
+
+      "==== 自定义指标 ====": "这些指标将作为 FreqAI 的特征（feature）",
+      "custom_indicators": {
+        "umacd": "EMA12/EMA26 比值偏差（主信号）",
+        "rsi": "RSI 超买超卖",
+        "adx": "趋势强度",
+        "bb_percent": "布林带位置",
+        "vol_ratio": "成交量比率",
+        "atr_pct": "ATR 波动率"
+      }
+    },
+
+    "==== 数据存储 ====": "",
+    "data_kitchen_thread_count": 4,
+    "backtest_using_historic_predictions": true,
+
+    "==== 模型配置 ====": "",
+    "model_training_parameters": {
+      "n_estimators": 1000,
+      "learning_rate": 0.02,
+      "max_depth": 6,
+      "num_leaves": 32,
+      "min_child_samples": 50,
+      "colsample_bytree": 0.8,
+      "subsample": 0.8,
+      "subsample_freq": 1,
+      "random_state": 42,
+      "n_jobs": -1,
+      "verbosity": -1
+    },
+
+    "==== 强化学习配置（高级，可选）====": "暂时注释，需要额外安装 stable-baselines3",
+    "rl_config_disabled": {
+      "train_cycles": 25,
+      "add_state_info": true,
+      "max_trade_duration_candles": 300,
+      "max_training_drawdown_pct": 0.02,
+      "cpu_count": 8,
+      "model_type": "PPO",
+      "policy_type": "MlpPolicy",
+      "continual_learning": false
+    }
+  },
+
+  "==== 合并说明 ====": "以下是将 FreqAI 集成到 AdaptiveMetaStrategy 的步骤",
+  "integration_steps": {
+    "step1_install": "确保 Docker 镜像包含 FreqAI 依赖：freqtradeorg/freqtrade:stable（已内置 LightGBM）",
+    "step2_config": "将上面的 freqai 对象添加到 config_spot.json",
+    "step3_strategy": "修改 AdaptiveMetaStrategy.py 中的 populate_entry_trend，调用 FreqAI 预测",
+    "step4_code_example": "示例代码见下方",
+    "step5_backtest": "运行带 FreqAI 的回测：freqtrade backtesting --freqaimodel LightGBMRegressor --strategy AdaptiveMetaStrategy"
+  },
+
+  "==== 策略代码集成示例 ====": "在 AdaptiveMetaStrategy.py 中替换 populate_indicators 和 populate_entry_trend",
+  "code_integration_example": {
+    "populate_indicators_addition": "在现有 populate_indicators 最后添加：\\n\\n# FreqAI 特征工程（如果 FreqAI 已启用）\\nif self.freqai_info.get('enabled', False):\\n    dataframe = self.freqai.start(dataframe, metadata, self)\\n\\nreturn dataframe",
+
+    "populate_entry_trend_addition": "在现有入场条件基础上添加 FreqAI 置信度过滤：\\n\\n# FreqAI 预测置信度过滤（如果 FreqAI 已启用）\\nif self.freqai_info.get('enabled', False) and '&-s_close' in dataframe.columns:\\n    dataframe.loc[\\n        (dataframe['enter_long'] == 1) &\\n        (dataframe['&-s_close'] > 0.01) &          # 预测上涨超过 1%\\n        (dataframe['do_predict'] == 1),             # 模型置信度高\\n        'enter_long'\\n    ] = 1",
+
+    "set_freqai_targets": "添加新方法：\\n\\ndef set_freqai_targets(self, dataframe: DataFrame, metadata: dict) -> DataFrame:\\n    '''\\n    定义 FreqAI 预测目标：\\n    预测未来 24 根 K 线的收盘价变化率\\n    '''\\n    dataframe['&-s_close'] = (\\n        dataframe['close'].shift(-self.freqai.dk.pair_dict[metadata['pair']]['label_period_candles'])\\n        / dataframe['close'] - 1\\n    )\\n    return dataframe"
+  },
+
+  "==== FreqAI 升级时间表建议 ====": {
+    "week_1_4": "使用当前规则策略 + Hyperopt 自动优化",
+    "week_5_8": "收集足够的真实交易数据（用于 FreqAI 训练）",
+    "week_9_12": "在 dry_run 模式下测试 FreqAI 混合策略",
+    "week_13+": "在小资金实盘中逐步引入 FreqAI 信号"
+  },
+
+  "==== 推荐模型 ====": {
+    "LightGBMRegressor": "速度最快，内存占用低，适合入门",
+    "XGBoostRegressor": "精度略高，速度较慢",
+    "CatboostRegressor": "处理类别特征好，需安装 catboost",
+    "PyTorchMLPRegressor": "深度学习，需要 GPU 和大量数据",
+    "ReinforcementLearner": "强化学习，需要最多数据和计算资源，最终目标"
+  }
+}

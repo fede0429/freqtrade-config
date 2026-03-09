@@ -1,0 +1,8 @@
+{
+  "stage": "dry_run",
+  "allowed_strategies": ["UniversalMACD_Futures"],
+  "default_rollout": {
+    "traffic_share": 0.0,
+    "max_concurrent_strategies": 1
+  }
+}

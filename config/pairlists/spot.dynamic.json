@@ -1,0 +1,39 @@
+{
+  "pair_selection_mode": "dynamic",
+  "exchange": {
+    "pair_whitelist": []
+  },
+  "pairlists": [
+    {
+      "method": "VolumePairList",
+      "number_assets": 20,
+      "sort_key": "quoteVolume",
+      "min_value": 0,
+      "refresh_period": 1800
+    },
+    {
+      "method": "AgeFilter",
+      "min_days_listed": 30
+    },
+    {
+      "method": "SpreadFilter",
+      "max_spread_ratio": 0.005
+    },
+    {
+      "method": "RangeStabilityFilter",
+      "lookback_days": 10,
+      "min_rate_of_change": 0.01,
+      "refresh_period": 1440
+    },
+    {
+      "method": "PriceFilter",
+      "low_price_ratio": 0.01,
+      "min_price": 1e-07,
+      "max_price": 100000
+    },
+    {
+      "method": "ShuffleFilter",
+      "seed": 42
+    }
+  ]
+}

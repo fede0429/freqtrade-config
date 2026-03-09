@@ -1,0 +1,16 @@
+{
+  "profile_name": "prod",
+  "release_channel": "prod",
+  "checks": {
+    "required_guard_status": "healthy",
+    "forbid_candidate_in_prod": true,
+    "forbid_dry_run_in_prod": true,
+    "require_prod_approved_strategies": true,
+    "max_prod_drawdown_ratio": 0.10
+  },
+  "paths": {
+    "risk_profile": "config/risk/runtime/spot.prod.json",
+    "reporting_profile": "config/reporting/runtime/spot.prod.json",
+    "trading_config": "config/runtime/spot.prod.static.json"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "timeframe": "15m",
+  "max_open_trades": 4,
+  "ema_filter_enabled": true,
+  "volume_filter_enabled": true,
+  "notes": "Conservative production baseline for studio operations."
+}

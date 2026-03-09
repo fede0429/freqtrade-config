@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  freqtrade-spot:
+    image: freqtradeorg/freqtrade:stable
+    container_name: studio-freqtrade-spot
+    restart: unless-stopped
+    env_file:
+      - ../config/secrets/.env
+    volumes:
+      - ../:/workspace
+    working_dir: /workspace
+    command: >
+      trade
+      --config /workspace/config/runtime/spot.paper.dynamic.json
+      --db-url sqlite:////workspace/data/tradesv3.spot.sqlite
+      --strategy-path /workspace/strategies/production
+      --strategy AdaptiveMetaStrategy
+    environment:
+      STUDIO_RISK_PROFILE: /workspace/config/risk/runtime/spot.paper.json
+
+  freqtrade-futures:
+    image: freqtradeorg/freqtrade:stable
+    container_name: studio-freqtrade-futures
+    restart: unless-stopped
+    env_file:
+      - ../config/secrets/.env
+    volumes:
+      - ../:/workspace
+    working_dir: /workspace
+    command: >
+      trade
+      --config /workspace/config/runtime/futures.paper.dynamic.json
+      --db-url sqlite:////workspace/data/tradesv3.futures.sqlite
+      --strategy-path /workspace/strategies/production
+      --strategy UniversalMACD_Futures
+    environment:
+      STUDIO_RISK_PROFILE: /workspace/config/risk/runtime/futures.paper.json

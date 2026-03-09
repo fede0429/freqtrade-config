@@ -1,0 +1,11 @@
+{
+  "profile_name": "prod",
+  "selection": {
+    "top_n": 12,
+    "min_score": 64,
+    "watchlist_min_score": 52
+  },
+  "pair_filters": {
+    "min_volume_ratio": 1.2
+  }
+}

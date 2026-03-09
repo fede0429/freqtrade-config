@@ -1,0 +1,6 @@
+Step 9 additions:
+- apps/scanner/market_scanner.py (v4 live/fixture source)
+- services/scanner/market_data.py
+- data/fixtures/scanner/*.json
+- scripts/validate/validate_scanner_data_source.py
+- docs/STEP9_SCANNER_REAL_DATA.md

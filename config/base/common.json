@@ -1,0 +1,116 @@
+{
+  "$schema": "https://schema.freqtrade.io/schema.json",
+  "system_role": "studio-trading-common",
+  "cancel_open_orders_on_exit": true,
+  "stake_currency": "USDT",
+  "stake_amount": "unlimited",
+  "fiat_display_currency": "USD",
+  "timeframe": "15m",
+  "unfilledtimeout": {
+    "entry": 10,
+    "exit": 30,
+    "exit_timeout_count": 0,
+    "unit": "minutes"
+  },
+  "entry_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1,
+    "price_last_balance": 0.0,
+    "check_depth_of_market": {
+      "enabled": false,
+      "bids_to_ask_delta": 1
+    }
+  },
+  "exit_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+  "order_types": {
+    "entry": "limit",
+    "exit": "limit",
+    "emergency_exit": "market",
+    "force_exit": "market",
+    "force_entry": "market",
+    "stoploss": "market",
+    "stoploss_on_exchange": true,
+    "stoploss_on_exchange_interval": 60,
+    "stoploss_on_exchange_limit_ratio": 0.99
+  },
+  "order_time_in_force": {
+    "entry": "GTC",
+    "exit": "GTC"
+  },
+  "exchange": {
+    "name": "binance",
+    "key": "OVERRIDDEN_BY_ENV",
+    "secret": "OVERRIDDEN_BY_ENV",
+    "ccxt_config": {
+      "enableRateLimit": true
+    },
+    "ccxt_async_config": {
+      "enableRateLimit": true,
+      "rateLimit": 200
+    },
+    "pair_whitelist": [],
+    "pair_blacklist": [
+      "BNB/BTC",
+      ".*UP/USDT",
+      ".*DOWN/USDT",
+      ".*BULL/USDT",
+      ".*BEAR/USDT",
+      ".*LONG/USDT",
+      ".*SHORT/USDT",
+      ".*3L/USDT",
+      ".*3S/USDT"
+    ]
+  },
+  "api_server": {
+    "enabled": true,
+    "listen_ip_address": "0.0.0.0",
+    "listen_port": 8080,
+    "verbosity": "error",
+    "enable_openapi": true,
+    "jwt_secret_key": "OVERRIDDEN_BY_ENV",
+    "CORS_origins": [
+      "http://localhost:3000"
+    ],
+    "username": "OVERRIDDEN_BY_ENV",
+    "password": "OVERRIDDEN_BY_ENV"
+  },
+  "telegram": {
+    "enabled": true,
+    "token": "OVERRIDDEN_BY_ENV",
+    "chat_id": "OVERRIDDEN_BY_ENV",
+    "allow_custom_messages": true,
+    "notification_settings": {
+      "status": "silent",
+      "warning": "on",
+      "startup": "on",
+      "entry": "on",
+      "entry_fill": "on",
+      "entry_cancel": "silent",
+      "exit": {
+        "roi": "silent",
+        "emergency_exit": "on",
+        "force_exit": "on",
+        "exit_signal": "silent",
+        "trailing_stop_loss": "on",
+        "stop_loss": "on",
+        "stoploss_on_exchange": "on",
+        "custom_exit": "silent",
+        "partial_exit": "on"
+      },
+      "exit_cancel": "on",
+      "exit_fill": "silent",
+      "protection_trigger": "on",
+      "protection_trigger_global": "on",
+      "show_candle": "off"
+    }
+  },
+  "internals": {
+    "process_throttle_secs": 5,
+    "heartbeat_interval": 60
+  }
+}

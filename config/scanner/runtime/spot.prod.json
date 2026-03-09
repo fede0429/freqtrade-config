@@ -1,0 +1,51 @@
+{
+  "selection": {
+    "top_n": 12,
+    "min_score": 64,
+    "watchlist_min_score": 52,
+    "hard_block_flags": [
+      "high_volatility",
+      "low_liquidity"
+    ]
+  },
+  "pair_filters": {
+    "min_liquidity_usd": 3000000,
+    "min_volume_ratio": 1.2,
+    "min_momentum_24h_pct": 0.5,
+    "min_momentum_1h_pct": 0.1,
+    "max_drawdown_entry_pct": -6.0,
+    "target_volatility_pct": 4.5,
+    "max_volatility_pct": 8.0
+  },
+  "market_regime": {
+    "trend_breadth_threshold": 0.62,
+    "risk_off_breadth_threshold": 0.38,
+    "max_volatility_pct": 9.0
+  },
+  "output": {
+    "write_json": true,
+    "write_report": true,
+    "report_path": "reports/scanner/latest_scan.json"
+  },
+  "source": {
+    "default_mode": "fixture",
+    "timeframe": "1h",
+    "lookback_candles": 72,
+    "trading_config": "config/runtime/spot.paper.dynamic.json",
+    "fixture_path": "data/fixtures/scanner/binance_spot_ohlcv_sample.json",
+    "universe": {
+      "quote_asset": "USDT",
+      "max_pairs": 12,
+      "pairs": [
+        "BTC/USDT",
+        "ETH/USDT",
+        "SOL/USDT",
+        "XRP/USDT",
+        "DOGE/USDT",
+        "AVAX/USDT"
+      ]
+    }
+  },
+  "market": "spot",
+  "profile_name": "prod"
+}

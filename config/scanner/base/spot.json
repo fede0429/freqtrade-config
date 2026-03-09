@@ -1,0 +1,14 @@
+{
+  "market": "spot",
+  "selection": {
+    "top_n": 20
+  },
+  "pair_filters": {
+    "min_liquidity_usd": 3000000,
+    "max_volatility_pct": 8.0
+  },
+  "source": {
+    "trading_config": "config/runtime/spot.paper.dynamic.json",
+    "fixture_path": "data/fixtures/scanner/binance_spot_ohlcv_sample.json"
+  }
+}

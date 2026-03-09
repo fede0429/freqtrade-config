@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  freqtrade-spot:
+    extends:
+      file: docker-compose.step6.yml
+      service: freqtrade-spot
+    environment:
+      STUDIO_RELEASE_PROFILE: config/release/runtime/spot.paper.json
+      STUDIO_PREFLIGHT_REPORT: reports/deploy/preflight_spot_paper.json
+  freqtrade-futures:
+    extends:
+      file: docker-compose.step6.yml
+      service: freqtrade-futures
+    environment:
+      STUDIO_RELEASE_PROFILE: config/release/runtime/futures.paper.json
+      STUDIO_PREFLIGHT_REPORT: reports/deploy/preflight_futures_paper.json

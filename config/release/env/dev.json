@@ -1,0 +1,10 @@
+{
+  "profile_name": "dev",
+  "release_channel": "dev",
+  "checks": {
+    "allow_prod_without_canary": true,
+    "forbid_candidate_in_prod": false,
+    "forbid_dry_run_in_prod": false,
+    "required_guard_status": "healthy"
+  }
+}

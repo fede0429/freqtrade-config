@@ -1,0 +1,272 @@
+{
+  "generated_at": "2026-03-09T18:05:03.826597+00:00",
+  "summary": {
+    "date": "2026-03-08",
+    "market_type": "spot",
+    "profile_name": "paper",
+    "equity_start": 25000.0,
+    "equity_end": 25207.5,
+    "realized_pnl": 167.5,
+    "unrealized_pnl": 69.0,
+    "net_pnl": 207.5,
+    "return_pct": 0.83,
+    "fees": 29.0,
+    "open_positions": 3,
+    "closed_trades": 6
+  },
+  "scanner": {
+    "market_regime": {
+      "regime": "trend",
+      "confidence": 0.6667,
+      "breadth": 0.6667,
+      "market_pressure": "allow",
+      "notes": [
+        "breadth supports trend following"
+      ]
+    },
+    "tradable_pairs": [
+      "SOL/USDT",
+      "ETH/USDT",
+      "BTC/USDT"
+    ],
+    "risk_flags": [
+      "deep_drawdown",
+      "low_liquidity"
+    ],
+    "selected_count": 3
+  },
+  "risk": {
+    "profile_name": "paper",
+    "daily_loss_limit_ratio": 0.02,
+    "weekly_loss_limit_ratio": 0.04,
+    "max_drawdown_ratio": 0.1,
+    "current_drawdown_ratio": 0.0018,
+    "guard_status": "healthy",
+    "scanner_gate_required": true
+  },
+  "data_sources": {
+    "pnl_input_type": "sqlite",
+    "scanner_input_type": "fixture",
+    "scanner_report_path": "reports/scanner/latest_scan.json",
+    "pnl_source_path": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite",
+    "scanner_candidate_count": 6,
+    "db_path_basename": "freqtrade_tradesv3_sample.sqlite",
+    "db_exists": true,
+    "db_is_fixture": true,
+    "db_last_modified": "2026-03-09T17:46:50.114070Z",
+    "closed_trade_count": 6,
+    "open_trade_count": 3,
+    "signal_pipeline_db": "data/fixtures/signal_pipeline/signal_pipeline_sample.sqlite",
+    "signal_pipeline_available": true
+  },
+  "strategies": [
+    {
+      "name": "AdaptiveMetaStrategy",
+      "stage": "canary",
+      "market": "spot",
+      "risk_budget_fraction": 0.25,
+      "exposure_usd": 2100.0,
+      "realized_pnl": 13.0,
+      "open_positions": 1,
+      "status": "active"
+    },
+    {
+      "name": "UniversalMACD_V2",
+      "stage": "production",
+      "market": "spot",
+      "risk_budget_fraction": 0.35,
+      "exposure_usd": 4650.0,
+      "realized_pnl": 154.5,
+      "open_positions": 2,
+      "status": "active"
+    },
+    {
+      "name": "UniversalMACD_Futures",
+      "stage": "dry_run",
+      "market": "futures",
+      "risk_budget_fraction": 0.1,
+      "exposure_usd": 0.0,
+      "realized_pnl": 0.0,
+      "open_positions": 0,
+      "status": "idle"
+    },
+    {
+      "name": "TrendEMAStrategy",
+      "stage": "candidate",
+      "market": "spot",
+      "risk_budget_fraction": 0.05,
+      "exposure_usd": 0.0,
+      "realized_pnl": 0.0,
+      "open_positions": 0,
+      "status": "idle"
+    }
+  ],
+  "top_winners": [
+    {
+      "pair": "BTC/USDT",
+      "strategy": "UniversalMACD_V2",
+      "pnl_usd": 91.0,
+      "profit_ratio": 0.0506,
+      "close_date": "2026-03-08T01:20:00+00:00",
+      "trade_duration": 200,
+      "fees": 8.5
+    },
+    {
+      "pair": "ETH/USDT",
+      "strategy": "AdaptiveMetaStrategy",
+      "pnl_usd": 54.0,
+      "profit_ratio": 0.0309,
+      "close_date": "2026-03-08T05:00:00+00:00",
+      "trade_duration": 180,
+      "fees": 7.5
+    },
+    {
+      "pair": "AVAX/USDT",
+      "strategy": "UniversalMACD_V2",
+      "pnl_usd": 41.0,
+      "profit_ratio": 0.0315,
+      "close_date": "2026-03-08T09:10:00+00:00",
+      "trade_duration": 190,
+      "fees": 3.8
+    }
+  ],
+  "top_losers": [
+    {
+      "pair": "DOGE/USDT",
+      "strategy": "AdaptiveMetaStrategy",
+      "pnl_usd": -23.0,
+      "profit_ratio": -0.023,
+      "close_date": "2026-03-08T08:05:00+00:00",
+      "trade_duration": 185,
+      "fees": 2.3
+    },
+    {
+      "pair": "XRP/USDT",
+      "strategy": "AdaptiveMetaStrategy",
+      "pnl_usd": -18.0,
+      "profit_ratio": -0.02,
+      "close_date": "2026-03-08T07:20:00+00:00",
+      "trade_duration": 200,
+      "fees": 2.1
+    }
+  ],
+  "risk_events": [
+    {
+      "severity": "medium",
+      "type": "scanner_flag",
+      "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."
+    },
+    {
+      "severity": "low",
+      "type": "drawdown_watch",
+      "message": "Intra-day drawdown remained below guard threshold."
+    }
+  ],
+  "execution_funnel": {
+    "signals": 4,
+    "decision_accept_or_reduce": 2,
+    "decision_delay_or_reject": 2,
+    "execution_dispatched": 2,
+    "execution_accepted": 2,
+    "execution_partial": 0,
+    "execution_filled": 2,
+    "execution_failed": 0,
+    "execution_cancelled": 0,
+    "execution_deduplicated": 2,
+    "reconciliation_strong_matched": 0,
+    "reconciliation_heuristic_matched": 0,
+    "shadow_opened": 2,
+    "shadow_closed": 2,
+    "decision_breakdown": {
+      "accept": 1,
+      "reduce": 1,
+      "delay": 1,
+      "reject": 1
+    }
+  },
+  "missed_alpha": {
+    "total_rejected_shadow": 2,
+    "profitable_rejected_shadow": 1,
+    "profitable_rejected_ratio": 0.5,
+    "avg_profitable_rejected_ratio": 0.036,
+    "best_rejected_ratio": 0.036,
+    "total_rejected_shadow_pnl_ratio": 0.024,
+    "strategy_missed_alpha_rank": [
+      {
+        "strategy_name": "TrendEMAStrategy",
+        "rejected_count": 1,
+        "profitable_count": 1,
+        "avg_pnl_ratio": 0.036,
+        "best_pnl_ratio": 0.036
+      },
+      {
+        "strategy_name": "AdaptiveMetaStrategy",
+        "rejected_count": 1,
+        "profitable_count": 0,
+        "avg_pnl_ratio": -0.012,
+        "best_pnl_ratio": -0.012
+      }
+    ]
+  },
+  "decision_to_fill": {
+    "filled_orders": 2,
+    "fill_rate_vs_dispatched": 1.0,
+    "avg_slippage_bps": 6.0,
+    "total_execution_fees": 65.23912,
+    "avg_fill_seconds": 8.548
+  },
+  "outcome_comparison": {
+    "accepted_decisions": 2,
+    "accepted_filled_orders": 2,
+    "accepted_reconciled_trades": 0,
+    "strong_reconciled_trades": 0,
+    "heuristic_reconciled_trades": 0,
+    "accepted_trade_pnl_usd": 0.0,
+    "accepted_trade_avg_ratio": 0.0,
+    "accepted_avg_slippage_bps": 6.0,
+    "rejected_shadow_count": 2,
+    "rejected_shadow_avg_ratio": 0.012,
+    "rejected_shadow_total_ratio": 0.024,
+    "actual_vs_rejected_shadow_ratio_gap": -0.012
+  },
+  "replace_cost_analysis": {
+    "replace_orders": 0,
+    "avg_replace_slippage_bps": 0.0,
+    "total_replace_fees": 0.0,
+    "avg_replace_price_move_bps": 0.0,
+    "replace_by_reason": []
+  },
+  "integrity_checks": {
+    "duplicate_dispatches": 0,
+    "orphan_orders": 0,
+    "orphan_dispatch_signals": 0,
+    "filled_unreconciled_orders": 2,
+    "state_anomalies": [],
+    "state_anomaly_count": 0
+  },
+  "traceability": {
+    "orders": 0,
+    "traced_orders": 0,
+    "trace_coverage_ratio": 0.0,
+    "distinct_runs": 0,
+    "distinct_traces": 0
+  },
+  "narrative": [
+    "Net daily result was 207.50 USD (0.83%) across 6 closed trades.",
+    "Scanner classified the market as trend and approved 3 tradable pairs.",
+    "Market-level warnings: deep_drawdown, low_liquidity.",
+    "Best contributing active strategy was UniversalMACD_V2 at 154.50 USD realized PnL.",
+    "Risk guard status remained healthy with current drawdown 0.0018.",
+    "Scanner is not live yet; current source mode is fixture.",
+    "Execution funnel: 4 signals -> 2 accepted/reduced -> 2 dispatched -> 2 filled.",
+    "Decision-to-fill quality: fill_rate=100.00%, avg_slippage=6.00 bps, fees=65.2391.",
+    "Missed alpha watch: 1 profitable rejected/delayed shadows out of 2 tracked.",
+    "Outcome comparison: accepted real trades avg_ratio=0.0000, rejected shadow avg_ratio=0.0120, gap=-0.0120, strong_recon=0.",
+    "Replace cost: 0 replace orders, avg_slippage=0.00 bps, fees=0.0000.",
+    "Integrity: duplicate_dispatches=0, filled_unreconciled=2, state_anomalies=0.",
+    "Traceability: coverage=0.00%, runs=0, traces=0.",
+    "PnL input source was sqlite.",
+    "SQLite input freqtrade_tradesv3_sample.sqlite exists=True fixture=True updated=2026-03-09T17:46:50.114070Z.",
+    "Scanner input source was fixture."
+  ]
+}

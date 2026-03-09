@@ -1,0 +1,25 @@
+{
+  "evidence_root": "reports/evidence/paper_run",
+  "days_completed": 1,
+  "expected_days": 7,
+  "missing_days": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "duplicate_days": [],
+  "guard_fail_days": [],
+  "startup_not_armed_days": [],
+  "release_not_approved_days": [],
+  "scanner_not_live_days": [
+    1
+  ],
+  "is_contiguous": false,
+  "has_failures": true,
+  "manifests": [
+    "reports/evidence/paper_run/day-01/evidence_manifest.json"
+  ]
+}

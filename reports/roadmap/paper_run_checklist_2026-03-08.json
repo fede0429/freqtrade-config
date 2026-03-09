@@ -1,0 +1,88 @@
+{
+  "as_of": "2026-03-08",
+  "overall_status": "in_progress",
+  "goal": "complete 7 consecutive paper-trading days before canary promotion",
+  "entry_criteria": [
+    "release gate approved for paper",
+    "startup chain is armed",
+    "reporting input type is sqlite",
+    "scanner output produces at least 2 tradable pairs"
+  ],
+  "current_observations": {
+    "scanner_source_mode": "fixture",
+    "pnl_input_type": "sqlite",
+    "startup_mode": "armed"
+  },
+  "daily_checkpoints": [
+    {
+      "day": 1,
+      "focus": "baseline health",
+      "checks": [
+        "archive scanner report",
+        "archive daily report",
+        "archive preflight/startup bundle",
+        "confirm guard_status is healthy"
+      ]
+    },
+    {
+      "day": 2,
+      "focus": "signal stability",
+      "checks": [
+        "compare tradable_pairs with day 1",
+        "review scanner risk flags drift",
+        "note any manual overrides"
+      ]
+    },
+    {
+      "day": 3,
+      "focus": "strategy consistency",
+      "checks": [
+        "review active strategy exposures",
+        "check unexpected candidate activity",
+        "confirm no blocked strategy receives budget"
+      ]
+    },
+    {
+      "day": 4,
+      "focus": "drawdown control",
+      "checks": [
+        "track current_drawdown_ratio",
+        "confirm no release gate regressions",
+        "review losing trades for repeated patterns"
+      ]
+    },
+    {
+      "day": 5,
+      "focus": "ops discipline",
+      "checks": [
+        "verify every startup went through startup_gate",
+        "ensure evidence bundle is complete",
+        "refresh program status"
+      ]
+    },
+    {
+      "day": 6,
+      "focus": "promotion readiness",
+      "checks": [
+        "compare realized pnl by strategy",
+        "review scanner source health",
+        "prepare canary scorecard notes"
+      ]
+    },
+    {
+      "day": 7,
+      "focus": "go or hold decision",
+      "checks": [
+        "summarize 7-day pnl",
+        "summarize risk events",
+        "decide promote/hold/downgrade and record rationale"
+      ]
+    }
+  ],
+  "exit_criteria": [
+    "7 consecutive days completed with archived evidence",
+    "no blocked startup days",
+    "risk guard remained healthy or every exception has documented remediation",
+    "owner decision recorded for canary promotion or hold"
+  ]
+}

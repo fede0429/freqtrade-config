@@ -1,0 +1,14 @@
+{
+  "score": 80,
+  "status": "watch",
+  "checks": {
+    "duplicate_dispatches": 0,
+    "orphan_execution_orders": 0,
+    "filled_unreconciled_orders": 2,
+    "order_state_anomalies": 0,
+    "trace_coverage_ratio": 1.0
+  },
+  "warnings": [
+    "filled but unreconciled orders: 2"
+  ]
+}

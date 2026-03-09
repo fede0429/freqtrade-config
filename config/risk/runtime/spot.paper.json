@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "risk_profile_name": "paper",
+  "portfolio": {
+    "account_equity_source": "exchange_balance",
+    "reserve_cash_ratio": 0.25,
+    "max_total_exposure_ratio": 0.7,
+    "max_strategy_exposure_ratio": 0.3,
+    "max_symbol_exposure_ratio": 0.14,
+    "max_correlated_bucket_exposure_ratio": 0.3,
+    "max_open_positions": 6
+  },
+  "guards": {
+    "daily_loss_limit_ratio": 0.02,
+    "weekly_loss_limit_ratio": 0.04,
+    "max_drawdown_ratio": 0.1,
+    "consecutive_loss_limit": 4,
+    "cooldown_minutes_after_guard_trip": 180,
+    "force_reduce_only_on_guard_trip": true,
+    "force_flatten_on_drawdown_breach": false
+  },
+  "market": {
+    "max_market_volatility_ratio": 0.08,
+    "max_funding_rate_abs": 0.002,
+    "btc_regime_filter_enabled": true,
+    "broad_market_drop_ratio": 0.05,
+    "pause_new_entries_on_market_stress": true,
+    "only_reduce_on_market_stress": false
+  },
+  "execution": {
+    "entry_cooldown_minutes_per_symbol": 30,
+    "min_notional_per_trade": 20,
+    "max_slippage_ratio": 0.0025,
+    "reject_orders_without_stop": false,
+    "require_scanner_approval": true
+  },
+  "dca": {
+    "enabled": true,
+    "max_additional_entries": 2,
+    "min_minutes_between_additions": 45,
+    "max_position_multiplier": 1.6
+  },
+  "alerts": {
+    "telegram_on_guard_trip": true,
+    "telegram_on_large_drawdown": true,
+    "telegram_on_manual_override": true
+  },
+  "market_type": "spot",
+  "environment": "paper"
+}

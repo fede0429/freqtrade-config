@@ -1,0 +1,22 @@
+{
+  "profile_name": "spot.paper.dispatch",
+  "connector": {
+    "mode": "dry_run"
+  },
+  "simulation": {
+    "fill_slippage_bps": 6.0,
+    "fee_bps": 10.0,
+    "default_quantity": 1.0
+  },
+  "lifecycle": {
+    "max_retries": 2,
+    "enable_partial_replace": true,
+    "enable_stale_retry": true,
+    "stale_after_seconds": 1
+  },
+  "paths": {
+    "signal_pipeline_db": "data/fixtures/signal_pipeline/signal_pipeline_sample.sqlite",
+    "execution_state_db": "reports/execution/dispatch_state.sqlite",
+    "trades_db": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite"
+  }
+}

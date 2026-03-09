@@ -1,0 +1,20 @@
+{
+  "date": "2026-03-08",
+  "equity_start": 10000.0,
+  "equity_end": 10072.0,
+  "realized_pnl": 58.0,
+  "unrealized_pnl": 14.0,
+  "fees": 9.2,
+  "max_drawdown_ratio": 0.009,
+  "win_rate": 0.54,
+  "profit_factor": 1.31,
+  "open_positions": [
+    {"pair": "BTC/USDT:USDT", "strategy": "UniversalMACD_Futures", "side": "long", "exposure_usd": 1250, "pnl_usd": 14.0}
+  ],
+  "closed_trades": [
+    {"pair": "BTC/USDT:USDT", "strategy": "UniversalMACD_Futures", "pnl_usd": 58.0}
+  ],
+  "risk_events": [
+    {"severity": "low", "type": "leverage_cap", "message": "Leverage stayed within capped futures profile."}
+  ]
+}

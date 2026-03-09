@@ -1,0 +1,54 @@
+{
+  "day": 1,
+  "archived_at": "2026-03-08T22:17:03.109137+00:00",
+  "as_of_date": "2026-03-08",
+  "environment": "paper",
+  "market_type": "spot",
+  "artifacts": [
+    {
+      "role": "program_status",
+      "source_path": "reports/roadmap/program_status_2026-03-08.json",
+      "archived_path": "reports/evidence/paper_run/day-01/program_status_2026-03-08.json"
+    },
+    {
+      "role": "scanner_report",
+      "source_path": "reports/scanner/latest_scan.json",
+      "archived_path": "reports/evidence/paper_run/day-01/latest_scan.json"
+    },
+    {
+      "role": "daily_report",
+      "source_path": "reports/operations/daily/studio_daily_report_2026-03-08.json",
+      "archived_path": "reports/evidence/paper_run/day-01/studio_daily_report_2026-03-08.json"
+    },
+    {
+      "role": "preflight_report",
+      "source_path": "reports/deploy/preflight_spot_paper.json",
+      "archived_path": "reports/evidence/paper_run/day-01/preflight_spot_paper.json"
+    },
+    {
+      "role": "startup_bundle",
+      "source_path": "release/runtime/startup_bundle_spot_paper.json",
+      "archived_path": "reports/evidence/paper_run/day-01/startup_bundle_spot_paper.json"
+    }
+  ],
+  "snapshot": {
+    "overall_status": "in_progress",
+    "startup_mode": "armed",
+    "release_approved": true,
+    "scanner_source_mode": "fixture",
+    "pnl_input_type": "sqlite",
+    "guard_status": "healthy",
+    "tradable_pairs": [
+      "SOL/USDT",
+      "ETH/USDT",
+      "BTC/USDT"
+    ],
+    "closed_trades": 6,
+    "net_pnl": 207.5
+  },
+  "operator_notes": [
+    "confirm no manual startup bypass occurred",
+    "record any anomalies observed during this paper day",
+    "attach remediation notes for any risk flags that persisted across days"
+  ]
+}

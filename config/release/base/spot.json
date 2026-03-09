@@ -1,0 +1,14 @@
+{
+  "market_type": "spot",
+  "deployment_target": "trader_spot",
+  "checks": {
+    "max_prod_drawdown_ratio": 0.12,
+    "min_scanner_selected_pairs": 2
+  },
+  "paths": {
+    "risk_profile": "config/risk/runtime/spot.paper.json",
+    "reporting_profile": "config/reporting/runtime/spot.paper.json",
+    "trading_config": "config/runtime/spot.paper.dynamic.json",
+    "docker_compose": "docker/docker-compose.step6.yml"
+  }
+}

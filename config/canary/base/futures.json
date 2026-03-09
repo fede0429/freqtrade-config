@@ -1,0 +1,8 @@
+{
+  "budget_guard": {
+    "market_type": "futures",
+    "max_notional_usd": 800,
+    "max_open_positions": 1,
+    "max_strategy_allocation_ratio": 0.25
+  }
+}

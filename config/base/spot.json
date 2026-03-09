@@ -1,0 +1,41 @@
+{
+  "system_role": "studio-trading-spot",
+  "max_open_trades": 5,
+  "tradable_balance_ratio": 0.7,
+  "available_capital": -1,
+  "amend_last_stake_amount": true,
+  "last_stake_amount_min_ratio": 0.5,
+  "pair_selection_mode": "dynamic",
+  "pairlists": [],
+  "protections": [
+    {
+      "method": "StoplossGuard",
+      "lookback_period_candles": 24,
+      "trade_limit": 2,
+      "stop_duration_candles": 4,
+      "only_per_pair": false
+    },
+    {
+      "method": "MaxDrawdown",
+      "lookback_period_candles": 48,
+      "trade_limit": 5,
+      "stop_duration_candles": 12,
+      "max_allowed_drawdown": 0.15
+    },
+    {
+      "method": "CooldownPeriod",
+      "stop_duration_candles": 2
+    },
+    {
+      "method": "LowProfitPairs",
+      "lookback_period_candles": 60,
+      "trade_limit": 1,
+      "stop_duration_candles": 60,
+      "required_profit": 0.0
+    }
+  ],
+  "api_server": {
+    "listen_port": 8080
+  },
+  "logfile": "/freqtrade/user_data/logs/freqtrade_spot.log"
+}

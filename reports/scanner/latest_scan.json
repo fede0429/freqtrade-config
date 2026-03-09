@@ -1,0 +1,215 @@
+{
+  "scan_timestamp": "2026-03-08T21:49:18.327577+00:00",
+  "profile_name": "paper",
+  "market": "spot",
+  "tradable_pairs": [
+    "SOL/USDT",
+    "ETH/USDT",
+    "BTC/USDT"
+  ],
+  "market_regime": {
+    "regime": "trend",
+    "confidence": 0.6667,
+    "breadth": 0.6667,
+    "market_pressure": "allow",
+    "notes": [
+      "breadth supports trend following"
+    ]
+  },
+  "risk_flags": [
+    "deep_drawdown",
+    "low_liquidity"
+  ],
+  "ranking_scores": [
+    {
+      "pair": "SOL/USDT",
+      "score": 86.29,
+      "momentum_24h": 26.3158,
+      "momentum_1h": 1.6949,
+      "volume_ratio": 1.3065,
+      "volatility": 1.0735,
+      "liquidity_usd": 3852000.0,
+      "tradable": true,
+      "risk_flags": [],
+      "reasons": [
+        "liquidity ok",
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ]
+    },
+    {
+      "pair": "ETH/USDT",
+      "score": 83.31,
+      "momentum_24h": 7.2727,
+      "momentum_1h": 0.6397,
+      "volume_ratio": 1.1971,
+      "volatility": 0.3286,
+      "liquidity_usd": 14254400.0,
+      "tradable": true,
+      "risk_flags": [],
+      "reasons": [
+        "liquidity ok",
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ]
+    },
+    {
+      "pair": "BTC/USDT",
+      "score": 83.3,
+      "momentum_24h": 7.5,
+      "momentum_1h": 0.5848,
+      "volume_ratio": 1.3387,
+      "volatility": 0.3238,
+      "liquidity_usd": 41409000.0,
+      "tradable": true,
+      "risk_flags": [],
+      "reasons": [
+        "liquidity ok",
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ]
+    },
+    {
+      "pair": "DOGE/USDT",
+      "score": 60.02,
+      "momentum_24h": 19.1667,
+      "momentum_1h": 0.7042,
+      "volume_ratio": 1.1574,
+      "volatility": 0.7562,
+      "liquidity_usd": 472186.0,
+      "tradable": false,
+      "risk_flags": [
+        "low_liquidity"
+      ],
+      "reasons": [
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ]
+    },
+    {
+      "pair": "AVAX/USDT",
+      "score": 35.13,
+      "momentum_24h": -17.0,
+      "momentum_1h": -0.8955,
+      "volume_ratio": 0.9296,
+      "volatility": 0.7834,
+      "liquidity_usd": 3157320.0,
+      "tradable": false,
+      "risk_flags": [
+        "deep_drawdown"
+      ],
+      "reasons": [
+        "liquidity ok",
+        "volatility acceptable"
+      ]
+    },
+    {
+      "pair": "XRP/USDT",
+      "score": 7.65,
+      "momentum_24h": -3.2258,
+      "momentum_1h": -0.1664,
+      "volume_ratio": 0.9164,
+      "volatility": 0.1634,
+      "liquidity_usd": 927000.0,
+      "tradable": false,
+      "risk_flags": [
+        "low_liquidity"
+      ],
+      "reasons": [
+        "volatility acceptable"
+      ]
+    }
+  ],
+  "pair_decisions": [
+    {
+      "pair": "BTC/USDT",
+      "decision": "allow",
+      "score": 83.3,
+      "reasons": [
+        "liquidity ok",
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ],
+      "risk_flags": []
+    },
+    {
+      "pair": "ETH/USDT",
+      "decision": "allow",
+      "score": 83.31,
+      "reasons": [
+        "liquidity ok",
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ],
+      "risk_flags": []
+    },
+    {
+      "pair": "SOL/USDT",
+      "decision": "allow",
+      "score": 86.29,
+      "reasons": [
+        "liquidity ok",
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ],
+      "risk_flags": []
+    },
+    {
+      "pair": "XRP/USDT",
+      "decision": "block",
+      "score": 7.65,
+      "reasons": [
+        "volatility acceptable"
+      ],
+      "risk_flags": [
+        "low_liquidity"
+      ]
+    },
+    {
+      "pair": "DOGE/USDT",
+      "decision": "watchlist",
+      "score": 60.02,
+      "reasons": [
+        "volume expansion",
+        "24h momentum ok",
+        "1h momentum ok",
+        "volatility acceptable"
+      ],
+      "risk_flags": [
+        "low_liquidity"
+      ]
+    },
+    {
+      "pair": "AVAX/USDT",
+      "decision": "block",
+      "score": 35.13,
+      "reasons": [
+        "liquidity ok",
+        "volatility acceptable"
+      ],
+      "risk_flags": [
+        "deep_drawdown"
+      ]
+    }
+  ],
+  "metadata": {
+    "selection_top_n": 25,
+    "selected_count": 3,
+    "source_mode": "fixture",
+    "candidate_count": 6
+  }
+}

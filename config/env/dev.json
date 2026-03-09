@@ -1,0 +1,9 @@
+{
+  "environment_name": "dev",
+  "dry_run": true,
+  "dry_run_wallet": 300,
+  "max_open_trades": 2,
+  "api_server": {
+    "username": "dev_admin"
+  }
+}

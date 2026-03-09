@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "timezone": "Europe/Rome",
+  "studio_name": "Studio Trading System",
+  "reporting": {
+    "include_markdown": true,
+    "include_json": true,
+    "max_top_winners": 3,
+    "max_top_losers": 3,
+    "include_strategy_health": true,
+    "include_risk_events": true,
+    "include_scanner_summary": true
+  },
+  "paths": {
+    "scanner_report": "reports/scanner/latest_scan.json",
+    "strategy_manifest": "strategies/registry/deployment_manifest.json",
+    "risk_profile": "config/risk/runtime/spot.paper.json",
+    "output_dir": "reports/operations/daily",
+    "pnl_input": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite",
+    "signal_pipeline_db": "data/fixtures/signal_pipeline/signal_pipeline_sample.sqlite",
+    "execution_state_db": "reports/execution/dispatch_state.sqlite"
+  },
+  "market_type": "spot",
+  "portfolio_scope": "studio_spot",
+  "summary_defaults": {
+    "benchmark_symbol": "BTC/USDT",
+    "capital_allocated_usd": 25000,
+    "cash_buffer_ratio": 0.25
+  },
+  "profile_name": "paper",
+  "risk_posture": "simulation",
+  "input_source": {
+    "type": "sqlite",
+    "db_path": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite",
+    "as_of_date": "2026-03-08",
+    "equity_start": 25000,
+    "unrealized_buffer": 70.0,
+    "risk_events": [
+      {
+        "severity": "medium",
+        "type": "scanner_flag",
+        "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."
+      },
+      {
+        "severity": "low",
+        "type": "drawdown_watch",
+        "message": "Intra-day drawdown remained below guard threshold."
+      }
+    ]
+  }
+}

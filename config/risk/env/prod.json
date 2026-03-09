@@ -1,0 +1,12 @@
+{
+  "risk_profile_name": "prod",
+  "guards": {
+    "daily_loss_limit_ratio": 0.015,
+    "weekly_loss_limit_ratio": 0.03,
+    "max_drawdown_ratio": 0.07,
+    "cooldown_minutes_after_guard_trip": 360
+  },
+  "execution": {
+    "require_scanner_approval": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "profile_name": "paper",
+  "risk_posture": "simulation",
+  "input_source": {
+    "type": "sqlite",
+    "db_path": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite",
+    "as_of_date": "2026-03-08",
+    "equity_start": 25000,
+    "unrealized_buffer": 70.0,
+    "risk_events": [
+      {"severity": "medium", "type": "scanner_flag", "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."},
+      {"severity": "low", "type": "drawdown_watch", "message": "Intra-day drawdown remained below guard threshold."}
+    ]
+  },
+  "paths": {
+    "pnl_input": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "risk_profile_name": "spot-base",
+  "portfolio": {
+    "max_total_exposure_ratio": 0.7,
+    "max_strategy_exposure_ratio": 0.3,
+    "max_symbol_exposure_ratio": 0.14,
+    "max_open_positions": 6
+  },
+  "guards": {
+    "daily_loss_limit_ratio": 0.025,
+    "weekly_loss_limit_ratio": 0.05,
+    "max_drawdown_ratio": 0.1,
+    "consecutive_loss_limit": 4
+  },
+  "market": {
+    "max_market_volatility_ratio": 0.08,
+    "pause_new_entries_on_market_stress": true,
+    "only_reduce_on_market_stress": false
+  },
+  "execution": {
+    "max_slippage_ratio": 0.0025
+  },
+  "dca": {
+    "enabled": true,
+    "max_additional_entries": 2,
+    "max_position_multiplier": 1.6
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "profile_name": "paper",
+  "selection": {
+    "top_n": 25,
+    "watchlist_min_score": 40
+  }
+}

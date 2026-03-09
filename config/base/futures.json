@@ -1,0 +1,67 @@
+{
+  "system_role": "studio-trading-futures",
+  "trading_mode": "futures",
+  "margin_mode": "isolated",
+  "max_open_trades": 3,
+  "tradable_balance_ratio": 0.5,
+  "available_capital": -1,
+  "amend_last_stake_amount": true,
+  "last_stake_amount_min_ratio": 0.5,
+  "pair_selection_mode": "dynamic",
+  "pairlists": [],
+  "exchange": {
+    "ccxt_config": {
+      "enableRateLimit": true,
+      "options": {
+        "defaultType": "future"
+      }
+    },
+    "ccxt_async_config": {
+      "enableRateLimit": true,
+      "rateLimit": 200,
+      "options": {
+        "defaultType": "future"
+      }
+    },
+    "pair_blacklist": [
+      ".*UP/USDT:USDT",
+      ".*DOWN/USDT:USDT"
+    ]
+  },
+  "leverage_config": {
+    "default": 3,
+    "BTC/USDT:USDT": 3,
+    "ETH/USDT:USDT": 3
+  },
+  "protections": [
+    {
+      "method": "StoplossGuard",
+      "lookback_period_candles": 12,
+      "trade_limit": 2,
+      "stop_duration_candles": 8,
+      "only_per_pair": false
+    },
+    {
+      "method": "MaxDrawdown",
+      "lookback_period_candles": 24,
+      "trade_limit": 3,
+      "stop_duration_candles": 24,
+      "max_allowed_drawdown": 0.1
+    },
+    {
+      "method": "CooldownPeriod",
+      "stop_duration_candles": 4
+    },
+    {
+      "method": "LowProfitPairs",
+      "lookback_period_candles": 48,
+      "trade_limit": 1,
+      "stop_duration_candles": 48,
+      "required_profit": 0.0
+    }
+  ],
+  "api_server": {
+    "listen_port": 8081
+  },
+  "logfile": "/freqtrade/user_data/logs/freqtrade_futures.log"
+}

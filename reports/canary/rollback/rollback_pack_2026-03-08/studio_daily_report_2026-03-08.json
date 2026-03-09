@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-03-08T22:10:48.070598+00:00",
+  "summary": {
+    "date": "2026-03-08",
+    "market_type": "spot",
+    "profile_name": "paper",
+    "equity_start": 25000.0,
+    "equity_end": 25207.5,
+    "realized_pnl": 167.5,
+    "unrealized_pnl": 69.0,
+    "net_pnl": 207.5,
+    "return_pct": 0.83,
+    "fees": 29.0,
+    "open_positions": 3,
+    "closed_trades": 6
+  },
+  "scanner": {
+    "market_regime": {
+      "regime": "trend",
+      "confidence": 0.6667,
+      "breadth": 0.6667,
+      "market_pressure": "allow",
+      "notes": [
+        "breadth supports trend following"
+      ]
+    },
+    "tradable_pairs": [
+      "SOL/USDT",
+      "ETH/USDT",
+      "BTC/USDT"
+    ],
+    "risk_flags": [
+      "deep_drawdown",
+      "low_liquidity"
+    ],
+    "selected_count": 3
+  },
+  "risk": {
+    "profile_name": "paper",
+    "daily_loss_limit_ratio": 0.02,
+    "weekly_loss_limit_ratio": 0.04,
+    "max_drawdown_ratio": 0.1,
+    "current_drawdown_ratio": 0.0018,
+    "guard_status": "healthy",
+    "scanner_gate_required": true
+  },
+  "data_sources": {
+    "pnl_input_type": "sqlite",
+    "scanner_input_type": "fixture",
+    "scanner_report_path": "reports/scanner/latest_scan.json",
+    "pnl_source_path": null,
+    "scanner_candidate_count": 6
+  },
+  "strategies": [
+    {
+      "name": "AdaptiveMetaStrategy",
+      "stage": "canary",
+      "market": "spot",
+      "risk_budget_fraction": 0.25,
+      "exposure_usd": 2100.0,
+      "realized_pnl": 13.0,
+      "open_positions": 1,
+      "status": "active"
+    },
+    {
+      "name": "UniversalMACD_V2",
+      "stage": "production",
+      "market": "spot",
+      "risk_budget_fraction": 0.35,
+      "exposure_usd": 4650.0,
+      "realized_pnl": 154.5,
+      "open_positions": 2,
+      "status": "active"
+    },
+    {
+      "name": "UniversalMACD_Futures",
+      "stage": "dry_run",
+      "market": "futures",
+      "risk_budget_fraction": 0.1,
+      "exposure_usd": 0.0,
+      "realized_pnl": 0.0,
+      "open_positions": 0,
+      "status": "idle"
+    },
+    {
+      "name": "TrendEMAStrategy",
+      "stage": "candidate",
+      "market": "spot",
+      "risk_budget_fraction": 0.05,
+      "exposure_usd": 0.0,
+      "realized_pnl": 0.0,
+      "open_positions": 0,
+      "status": "idle"
+    }
+  ],
+  "top_winners": [
+    {
+      "pair": "BTC/USDT",
+      "strategy": "UniversalMACD_V2",
+      "pnl_usd": 91.0,
+      "profit_ratio": 0.0506,
+      "close_date": "2026-03-08T01:20:00+00:00",
+      "trade_duration": 200,
+      "fees": 8.5
+    },
+    {
+      "pair": "ETH/USDT",
+      "strategy": "AdaptiveMetaStrategy",
+      "pnl_usd": 54.0,
+      "profit_ratio": 0.0309,
+      "close_date": "2026-03-08T05:00:00+00:00",
+      "trade_duration": 180,
+      "fees": 7.5
+    },
+    {
+      "pair": "AVAX/USDT",
+      "strategy": "UniversalMACD_V2",
+      "pnl_usd": 41.0,
+      "profit_ratio": 0.0315,
+      "close_date": "2026-03-08T09:10:00+00:00",
+      "trade_duration": 190,
+      "fees": 3.8
+    }
+  ],
+  "top_losers": [
+    {
+      "pair": "DOGE/USDT",
+      "strategy": "AdaptiveMetaStrategy",
+      "pnl_usd": -23.0,
+      "profit_ratio": -0.023,
+      "close_date": "2026-03-08T08:05:00+00:00",
+      "trade_duration": 185,
+      "fees": 2.3
+    },
+    {
+      "pair": "XRP/USDT",
+      "strategy": "AdaptiveMetaStrategy",
+      "pnl_usd": -18.0,
+      "profit_ratio": -0.02,
+      "close_date": "2026-03-08T07:20:00+00:00",
+      "trade_duration": 200,
+      "fees": 2.1
+    }
+  ],
+  "risk_events": [
+    {
+      "severity": "medium",
+      "type": "scanner_flag",
+      "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."
+    },
+    {
+      "severity": "low",
+      "type": "drawdown_watch",
+      "message": "Intra-day drawdown remained below guard threshold."
+    }
+  ],
+  "narrative": [
+    "Net daily result was 207.50 USD (0.83%) across 6 closed trades.",
+    "Scanner classified the market as trend and approved 3 tradable pairs.",
+    "Market-level warnings: deep_drawdown, low_liquidity.",
+    "Best contributing active strategy was UniversalMACD_V2 at 154.50 USD realized PnL.",
+    "Risk guard status remained healthy with current drawdown 0.0018.",
+    "Scanner is not live yet; current source mode is fixture.",
+    "PnL input source was sqlite.",
+    "Scanner input source was fixture."
+  ]
+}

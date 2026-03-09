@@ -1,0 +1,26 @@
+{
+  "profile_name": "prod",
+  "risk_posture": "capital_at_risk",
+  "input_source": {
+    "type": "sqlite",
+    "db_path": "/opt/trading-system/runtime/data/tradesv3_prod.sqlite",
+    "as_of_date": "2026-03-08",
+    "equity_start": 25000,
+    "unrealized_buffer": 70.0,
+    "risk_events": [
+      {
+        "severity": "medium",
+        "type": "scanner_flag",
+        "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."
+      },
+      {
+        "severity": "medium",
+        "type": "release_watch",
+        "message": "Prod release remains gated until forbidden lifecycle stages are removed from deployment."
+      }
+    ]
+  },
+  "paths": {
+    "pnl_input": "/opt/trading-system/runtime/data/tradesv3_prod.sqlite"
+  }
+}

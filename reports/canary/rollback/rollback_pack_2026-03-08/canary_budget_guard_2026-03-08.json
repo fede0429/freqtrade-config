@@ -1,0 +1,87 @@
+{
+  "status": "blocked",
+  "verdict": "rollback_required_before_canary",
+  "checks": [
+    {
+      "name": "canary_readiness_verdict",
+      "passed": false,
+      "details": {
+        "status": "blocked",
+        "verdict": "not_eligible",
+        "score": "2/5"
+      }
+    },
+    {
+      "name": "startup_channel_match",
+      "passed": false,
+      "details": {
+        "startup_release_channel": "paper",
+        "allowed_release_channel": "canary"
+      }
+    },
+    {
+      "name": "release_gate_approved",
+      "passed": true,
+      "details": {
+        "approved": true,
+        "mode": "release"
+      }
+    },
+    {
+      "name": "open_positions_within_limit",
+      "passed": false,
+      "details": {
+        "open_positions": 3,
+        "limit": 2
+      }
+    },
+    {
+      "name": "notional_within_limit",
+      "passed": false,
+      "details": {
+        "open_exposure_usd": 6750.0,
+        "limit_usd": 1500
+      }
+    },
+    {
+      "name": "daily_loss_within_limit",
+      "passed": true,
+      "details": {
+        "net_pnl_usd": 207.5,
+        "min_allowed_usd": -120.0
+      }
+    },
+    {
+      "name": "drawdown_within_limit",
+      "passed": false,
+      "details": {
+        "max_drawdown_ratio": 0.1,
+        "limit_ratio": 0.03
+      }
+    },
+    {
+      "name": "strategy_allocation_within_limit",
+      "passed": true,
+      "details": {
+        "largest_strategy_allocation_ratio": 0.186,
+        "limit_ratio": 0.35
+      }
+    }
+  ],
+  "required_actions": [
+    "promote to canary only after canary readiness scorecard reaches ready",
+    "launch canary only through a canary release profile and startup bundle",
+    "reduce open positions to the canary budget limit",
+    "cut notional exposure to the canary budget cap",
+    "resolve drawdown breach before canary launch"
+  ],
+  "summary": {
+    "checks_passed": 3,
+    "checks_total": 8,
+    "open_positions": 3,
+    "open_exposure_usd": 6750.0,
+    "net_pnl_usd": 207.5,
+    "max_drawdown_ratio": 0.1,
+    "largest_strategy_allocation_ratio": 0.186
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "date": "2026-03-08",
+  "equity_start": 25000.0,
+  "equity_end": 25237.5,
+  "realized_pnl": 167.5,
+  "unrealized_pnl": 70.0,
+  "fees": 18.4,
+  "max_drawdown_ratio": 0.011,
+  "win_rate": 0.57,
+  "profit_factor": 1.42,
+  "open_positions": [
+    {"pair": "BTC/USDT", "strategy": "UniversalMACD_V2", "side": "long", "exposure_usd": 3200, "pnl_usd": 74.0},
+    {"pair": "ETH/USDT", "strategy": "AdaptiveMetaStrategy", "side": "long", "exposure_usd": 2100, "pnl_usd": 31.5},
+    {"pair": "SOL/USDT", "strategy": "UniversalMACD_V2", "side": "long", "exposure_usd": 1450, "pnl_usd": -12.0}
+  ],
+  "closed_trades": [
+    {"pair": "BTC/USDT", "strategy": "UniversalMACD_V2", "pnl_usd": 91.0},
+    {"pair": "ETH/USDT", "strategy": "AdaptiveMetaStrategy", "pnl_usd": 54.0},
+    {"pair": "SOL/USDT", "strategy": "UniversalMACD_V2", "pnl_usd": 22.5},
+    {"pair": "XRP/USDT", "strategy": "AdaptiveMetaStrategy", "pnl_usd": -18.0},
+    {"pair": "DOGE/USDT", "strategy": "AdaptiveMetaStrategy", "pnl_usd": -23.0},
+    {"pair": "AVAX/USDT", "strategy": "UniversalMACD_V2", "pnl_usd": 41.0}
+  ],
+  "risk_events": [
+    {"severity": "medium", "type": "scanner_flag", "message": "Market flagged high_volatility but entries remained allowed for top-ranked symbols."},
+    {"severity": "low", "type": "drawdown_watch", "message": "Intra-day drawdown remained below guard threshold."}
+  ]
+}

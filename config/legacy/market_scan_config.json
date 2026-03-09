@@ -1,0 +1,50 @@
+{
+  "exchange": {
+    "name": "binance",
+    "pair_whitelist": [
+      ".*/USDT"
+    ],
+    "pair_blacklist": [
+        "(BNB|BUSD|TUSD|PAX|USDC|UST|EUR|GBP|AUD|JPY|BRL|RUB|TRY|ZAR)/USDT",
+        ".*UP/USDT",
+        ".*DOWN/USDT",
+        ".*BULL/USDT",
+        ".*BEAR/USDT"
+    ]
+  },
+  "stoploss": -0.1,
+  "pairlists": [
+    {
+      "method": "VolumePairList",
+      "number_assets": 20,
+      "sort_key": "quoteVolume",
+      "min_value_24h": 1000000,
+      "refresh_period": 1800
+    },
+    {
+        "method": "PrecisionFilter"
+    },
+    {
+        "method": "PriceFilter",
+        "low_price_ratio": 0.001
+    },
+    {
+        "method": "SpreadFilter",
+        "max_spread_ratio": 0.005
+    }
+  ],
+  "edge": {
+    "enabled": false,
+    "process_throttle_secs": 3600,
+    "calculate_since_number_of_days": 7,
+    "allowed_risk": 0.01,
+    "stoploss_range_min": -0.01,
+    "stoploss_range_max": -0.1,
+    "stoploss_range_step": -0.01,
+    "minimum_winrate": 0.6,
+    "minimum_expectancy": 0.2,
+    "min_trade_number": 10,
+    "max_trade_duration_minute": 1440,
+    "remove_pumps": false
+  }
+}

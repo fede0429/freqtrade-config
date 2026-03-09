@@ -1,0 +1,8 @@
+{
+  "stage": "production",
+  "allowed_strategies": ["UniversalMACD_V2"],
+  "default_rollout": {
+    "traffic_share": 1.0,
+    "max_concurrent_strategies": 1
+  }
+}

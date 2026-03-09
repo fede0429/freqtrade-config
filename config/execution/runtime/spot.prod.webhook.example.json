@@ -1,0 +1,14 @@
+{
+  "profile_name": "spot.prod.webhook",
+  "connector": {
+    "mode": "webhook",
+    "endpoint": "http://localhost:8080/api/v1/meta-execution",
+    "status_endpoint_template": "http://localhost:8080/api/v1/meta-execution/orders/{remote_id}",
+    "token": "REPLACE_ME",
+    "timeout_seconds": 10
+  },
+  "paths": {
+    "signal_pipeline_db": "data/fixtures/signal_pipeline/signal_pipeline_sample.sqlite",
+    "execution_state_db": "reports/execution/dispatch_state.sqlite"
+  }
+}

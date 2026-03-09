@@ -1,0 +1,7 @@
+{
+  "timeframe": "15m",
+  "max_open_trades": 2,
+  "leverage_cap": 2,
+  "position_adjustment_enable": false,
+  "notes": "Futures line stays in paper until risk event rate and execution slippage stabilize."
+}

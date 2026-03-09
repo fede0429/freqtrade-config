@@ -1,0 +1,8 @@
+{
+  "timeframe": "15m",
+  "stake_amount_mode": "unlimited",
+  "max_open_trades": 3,
+  "startup_candle_count": 240,
+  "position_adjustment_enable": true,
+  "notes": "Primary adaptive spot strategy. Canary only until live signal stability is confirmed."
+}

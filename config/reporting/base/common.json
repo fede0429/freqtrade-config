@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "timezone": "Europe/Rome",
+  "studio_name": "Studio Trading System",
+  "reporting": {
+    "include_markdown": true,
+    "include_json": true,
+    "max_top_winners": 3,
+    "max_top_losers": 3,
+    "include_strategy_health": true,
+    "include_risk_events": true,
+    "include_scanner_summary": true
+  },
+  "paths": {
+    "scanner_report": "reports/scanner/latest_scan.json",
+    "strategy_manifest": "strategies/registry/deployment_manifest.json",
+    "risk_profile": "config/risk/runtime/spot.paper.json",
+    "output_dir": "reports/operations/daily"
+  }
+}

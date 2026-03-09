@@ -1,0 +1,30 @@
+{
+  "approved": true,
+  "startup_mode": "armed",
+  "startup_target": "trader_spot",
+  "release_profile": "config/release/runtime/spot.paper.json",
+  "preflight_report": "reports/deploy/preflight_spot_paper.json",
+  "trading_config": "config/runtime/spot.paper.dynamic.json",
+  "risk_profile": "config/risk/runtime/spot.paper.json",
+  "scanner_report": "reports/scanner/latest_scan.json",
+  "daily_report": "reports/operations/daily/studio_daily_report_2026-03-08.json",
+  "strategy_manifest": "strategies/registry/deployment_manifest.json",
+  "docker_compose": "docker/docker-compose.step6.yml",
+  "service_name": "freqtrade-spot",
+  "command_preview": [
+    "docker",
+    "compose",
+    "-f",
+    "/mnt/data/step9cproj/docker/docker-compose.step6.yml",
+    "up",
+    "-d",
+    "freqtrade-spot"
+  ],
+  "generated_at": "2026-03-08T22:01:46.022661+00:00",
+  "release_channel": "paper",
+  "market_type": "spot",
+  "required_actions": [
+    "Review preflight report before starting trader.",
+    "Do not bypass blocked startup without explicitly fixing failed checks."
+  ]
+}

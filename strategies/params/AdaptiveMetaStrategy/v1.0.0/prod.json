@@ -1,0 +1,6 @@
+{
+  "dry_run": false,
+  "max_open_trades": 1,
+  "risk_budget_fraction": 0.12,
+  "telemetry_tag": "prod-canary"
+}

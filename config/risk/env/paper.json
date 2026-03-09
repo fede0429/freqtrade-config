@@ -1,0 +1,11 @@
+{
+  "risk_profile_name": "paper",
+  "guards": {
+    "daily_loss_limit_ratio": 0.02,
+    "weekly_loss_limit_ratio": 0.04,
+    "cooldown_minutes_after_guard_trip": 180
+  },
+  "alerts": {
+    "telegram_on_guard_trip": true
+  }
+}

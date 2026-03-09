@@ -1,0 +1,33 @@
+{
+  "severity": "high",
+  "alert_count": 1,
+  "as_of_date": null,
+  "incidents": [
+    {
+      "severity": "high",
+      "code": "filled_unreconciled_orders",
+      "message": "2 filled orders have no reconciliation row"
+    }
+  ],
+  "trace_coverage": {
+    "db_path": "data/fixtures/signal_pipeline/signal_pipeline_sample.sqlite",
+    "tables": {
+      "strategy_signals": {
+        "rows": 4,
+        "traced_rows": 4,
+        "ratio": 1.0
+      },
+      "decision_events": {
+        "rows": 4,
+        "traced_rows": 4,
+        "ratio": 1.0
+      },
+      "shadow_positions": {
+        "rows": 2,
+        "traced_rows": 2,
+        "ratio": 1.0
+      }
+    },
+    "overall_ratio": 1.0
+  }
+}

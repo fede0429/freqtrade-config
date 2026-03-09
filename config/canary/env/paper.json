@@ -1,0 +1,6 @@
+{
+  "budget_guard": {
+    "enforced": false,
+    "release_channel": "paper"
+  }
+}

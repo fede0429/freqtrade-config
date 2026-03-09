@@ -1,0 +1,78 @@
+{
+  "status": "blocked",
+  "score": 2,
+  "max_score": 5,
+  "verdict": "not_eligible",
+  "checks": [
+    {
+      "name": "continuous_evidence_window",
+      "passed": false,
+      "details": {
+        "days_completed": 1,
+        "missing_days": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      }
+    },
+    {
+      "name": "minimum_days_completed",
+      "passed": false,
+      "details": {
+        "days_completed": 1,
+        "days_required": 7
+      }
+    },
+    {
+      "name": "risk_guard_health",
+      "passed": true,
+      "details": {
+        "guard_fail_days": []
+      }
+    },
+    {
+      "name": "startup_gate_discipline",
+      "passed": true,
+      "details": {
+        "startup_not_armed_days": [],
+        "release_not_approved_days": []
+      }
+    },
+    {
+      "name": "scanner_live_source",
+      "passed": false,
+      "details": {
+        "scanner_not_live_days": [
+          1
+        ]
+      }
+    }
+  ],
+  "required_actions": [
+    "fill missing paper-run evidence days before canary promotion",
+    "complete at least 7 archived paper-run days",
+    "switch scanner to live mode for the full paper-run window before canary promotion"
+  ],
+  "summary": {
+    "days_completed": 1,
+    "days_required": 7,
+    "missing_days": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "guard_fail_days": [],
+    "startup_not_armed_days": [],
+    "release_not_approved_days": [],
+    "scanner_not_live_days": [
+      1
+    ]
+  }
+}

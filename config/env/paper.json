@@ -1,0 +1,8 @@
+{
+  "environment_name": "paper",
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "api_server": {
+    "username": "paper_admin"
+  }
+}

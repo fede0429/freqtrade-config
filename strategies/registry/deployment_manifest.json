@@ -1,0 +1,103 @@
+{
+  "generated_from": "strategies/registry/strategy_registry.json",
+  "strategies": [
+    {
+      "name": "AdaptiveMetaStrategy",
+      "lifecycle_stage": "canary",
+      "market": "spot",
+      "paper_runtime": {
+        "timeframe": "15m",
+        "stake_amount_mode": "unlimited",
+        "max_open_trades": 2,
+        "startup_candle_count": 240,
+        "position_adjustment_enable": true,
+        "notes": "Primary adaptive spot strategy. Canary only until live signal stability is confirmed.",
+        "dry_run": true,
+        "risk_budget_fraction": 0.25,
+        "telemetry_tag": "paper-canary"
+      },
+      "prod_runtime": {
+        "timeframe": "15m",
+        "stake_amount_mode": "unlimited",
+        "max_open_trades": 1,
+        "startup_candle_count": 240,
+        "position_adjustment_enable": true,
+        "notes": "Primary adaptive spot strategy. Canary only until live signal stability is confirmed.",
+        "dry_run": false,
+        "risk_budget_fraction": 0.12,
+        "telemetry_tag": "prod-canary"
+      }
+    },
+    {
+      "name": "UniversalMACD_V2",
+      "lifecycle_stage": "production",
+      "market": "spot",
+      "paper_runtime": {
+        "timeframe": "15m",
+        "max_open_trades": 4,
+        "ema_filter_enabled": true,
+        "volume_filter_enabled": true,
+        "notes": "Conservative production baseline for studio operations.",
+        "dry_run": true,
+        "risk_budget_fraction": 0.35,
+        "telemetry_tag": "paper-prod-baseline"
+      },
+      "prod_runtime": {
+        "timeframe": "15m",
+        "max_open_trades": 4,
+        "ema_filter_enabled": true,
+        "volume_filter_enabled": true,
+        "notes": "Conservative production baseline for studio operations.",
+        "dry_run": false,
+        "risk_budget_fraction": 0.25,
+        "telemetry_tag": "prod-baseline"
+      }
+    },
+    {
+      "name": "UniversalMACD_Futures",
+      "lifecycle_stage": "dry_run",
+      "market": "futures",
+      "paper_runtime": {
+        "timeframe": "15m",
+        "max_open_trades": 2,
+        "leverage_cap": 2,
+        "position_adjustment_enable": false,
+        "notes": "Futures line stays in paper until risk event rate and execution slippage stabilize.",
+        "dry_run": true,
+        "risk_budget_fraction": 0.1,
+        "telemetry_tag": "paper-futures"
+      },
+      "prod_runtime": {
+        "timeframe": "15m",
+        "max_open_trades": 2,
+        "leverage_cap": 2,
+        "position_adjustment_enable": false,
+        "notes": "Futures line stays in paper until risk event rate and execution slippage stabilize.",
+        "dry_run": false,
+        "risk_budget_fraction": 0.05,
+        "telemetry_tag": "prod-futures-restricted"
+      }
+    },
+    {
+      "name": "TrendEMAStrategy",
+      "lifecycle_stage": "candidate",
+      "market": "spot",
+      "paper_runtime": {
+        "timeframe": "1h",
+        "max_open_trades": 2,
+        "notes": "Research strategy only. Not eligible for live deployment.",
+        "dry_run": true,
+        "risk_budget_fraction": 0.05,
+        "telemetry_tag": "research-paper"
+      },
+      "prod_runtime": {
+        "timeframe": "1h",
+        "max_open_trades": 2,
+        "notes": "Research strategy only. Not eligible for live deployment.",
+        "dry_run": false,
+        "risk_budget_fraction": 0.0,
+        "telemetry_tag": "invalid-prod-research"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "market_type": "futures",
+  "portfolio_scope": "studio_futures",
+  "summary_defaults": {
+    "benchmark_symbol": "BTC/USDT:USDT",
+    "capital_allocated_usd": 10000,
+    "cash_buffer_ratio": 0.4
+  }
+}

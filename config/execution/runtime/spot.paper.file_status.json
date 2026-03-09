@@ -1,0 +1,18 @@
+{
+  "profile_name": "spot.paper.file_status",
+  "connector": {
+    "mode": "file_status",
+    "status_file": "data/fixtures/execution/file_status_sample.json"
+  },
+  "lifecycle": {
+    "max_retries": 2,
+    "enable_partial_replace": true,
+    "enable_stale_retry": false,
+    "stale_after_seconds": 120
+  },
+  "paths": {
+    "signal_pipeline_db": "data/fixtures/signal_pipeline/signal_pipeline_sample.sqlite",
+    "execution_state_db": "reports/execution/dispatch_state.sqlite",
+    "trades_db": "data/fixtures/reporting/freqtrade_tradesv3_sample.sqlite"
+  }
+}

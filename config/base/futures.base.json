@@ -1,0 +1,206 @@
+{
+  "$schema": "https://schema.freqtrade.io/schema.json",
+
+  "==== 说明 ====": "永续合约实盘配置 | 基于 config_spot.json 修改 | 更保守的风控",
+
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "cancel_open_orders_on_exit": true,
+
+  "==== 永续合约模式 ====": "",
+  "trading_mode": "futures",
+  "margin_mode": "isolated",
+
+  "==== 仓位管理（更保守）====": "",
+  "max_open_trades": 3,
+  "stake_currency": "USDT",
+  "stake_amount": "unlimited",
+  "tradable_balance_ratio": 0.5,
+  "available_capital": -1,
+  "amend_last_stake_amount": true,
+  "last_stake_amount_min_ratio": 0.5,
+
+  "fiat_display_currency": "USD",
+  "timeframe": "15m",
+
+  "==== 超时设置 ====": "",
+  "unfilledtimeout": {
+    "entry": 10,
+    "exit": 30,
+    "exit_timeout_count": 0,
+    "unit": "minutes"
+  },
+
+  "==== 入场/出场定价 ====": "",
+  "entry_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1,
+    "price_last_balance": 0.0
+  },
+  "exit_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+
+  "==== 交易所配置（永续合约）====": "",
+  "exchange": {
+    "name": "binance",
+    "key": "CHANGE_ME_FUTURES_API_KEY",
+    "secret": "CHANGE_ME_FUTURES_API_SECRET",
+    "ccxt_config": {
+      "enableRateLimit": true,
+      "options": {
+        "defaultType": "future"
+      }
+    },
+    "ccxt_async_config": {
+      "enableRateLimit": true,
+      "rateLimit": 200,
+      "options": {
+        "defaultType": "future"
+      }
+    },
+    "pair_whitelist": [
+      "BTC/USDT:USDT",
+      "ETH/USDT:USDT",
+      "BNB/USDT:USDT",
+      "SOL/USDT:USDT",
+      "XRP/USDT:USDT",
+      "ADA/USDT:USDT",
+      "AVAX/USDT:USDT",
+      "LINK/USDT:USDT",
+      "DOT/USDT:USDT",
+      "MATIC/USDT:USDT"
+    ],
+    "pair_blacklist": [
+      ".*UP/USDT:USDT",
+      ".*DOWN/USDT:USDT"
+    ]
+  },
+
+  "==== 动态交易对筛选 ====": "",
+  "pairlists": [
+    {
+      "method": "VolumePairList",
+      "number_assets": 15,
+      "sort_key": "quoteVolume",
+      "min_value": 0,
+      "refresh_period": 1800
+    },
+    {
+      "method": "AgeFilter",
+      "min_days_listed": 60
+    },
+    {
+      "method": "SpreadFilter",
+      "max_spread_ratio": 0.005
+    },
+    {
+      "method": "ShuffleFilter",
+      "seed": 42
+    }
+  ],
+
+  "==== 杠杆设置 ====": "",
+  "leverage_config": {
+    "default": 3,
+    "BTC/USDT:USDT": 3,
+    "ETH/USDT:USDT": 3
+  },
+
+  "==== 订单类型（更严格）====": "",
+  "order_types": {
+    "entry": "limit",
+    "exit": "limit",
+    "emergency_exit": "market",
+    "force_exit": "market",
+    "force_entry": "market",
+    "stoploss": "market",
+    "stoploss_on_exchange": true,
+    "stoploss_on_exchange_interval": 30,
+    "stoploss_on_exchange_limit_ratio": 0.99
+  },
+  "order_time_in_force": {
+    "entry": "GTC",
+    "exit": "GTC"
+  },
+
+  "==== 交易保护（更保守）====": "",
+  "protections": [
+    {
+      "method": "StoplossGuard",
+      "lookback_period_candles": 12,
+      "trade_limit": 2,
+      "stop_duration_candles": 8,
+      "only_per_pair": false
+    },
+    {
+      "method": "MaxDrawdown",
+      "lookback_period_candles": 24,
+      "trade_limit": 3,
+      "stop_duration_candles": 24,
+      "max_allowed_drawdown": 0.10
+    },
+    {
+      "method": "CooldownPeriod",
+      "stop_duration_candles": 4
+    },
+    {
+      "method": "LowProfitPairs",
+      "lookback_period_candles": 48,
+      "trade_limit": 1,
+      "stop_duration_candles": 48,
+      "required_profit": 0.0
+    }
+  ],
+
+  "==== API 服务器 ====": "",
+  "api_server": {
+    "enabled": true,
+    "listen_ip_address": "0.0.0.0",
+    "listen_port": 8081,
+    "verbosity": "error",
+    "enable_openapi": true,
+    "jwt_secret_key": "CHANGE_ME_FUTURES_JWT_SECRET_32CH",
+    "CORS_origins": ["http://localhost:3000"],
+    "username": "CHANGE_ME_USERNAME",
+    "password": "CHANGE_ME_PASSWORD"
+  },
+
+  "==== Telegram 通知 ====": "",
+  "telegram": {
+    "enabled": true,
+    "token": "CHANGE_ME_BOT_TOKEN",
+    "chat_id": "CHANGE_ME_CHAT_ID",
+    "allow_custom_messages": true,
+    "notification_settings": {
+      "status": "silent",
+      "warning": "on",
+      "startup": "on",
+      "entry": "on",
+      "entry_fill": "on",
+      "exit": {
+        "roi": "on",
+        "emergency_exit": "on",
+        "force_exit": "on",
+        "trailing_stop_loss": "on",
+        "stop_loss": "on",
+        "stoploss_on_exchange": "on",
+        "custom_exit": "on",
+        "partial_exit": "on"
+      },
+      "protection_trigger": "on",
+      "protection_trigger_global": "on"
+    }
+  },
+
+  "==== 内部设置 ====": "",
+  "internals": {
+    "process_throttle_secs": 5,
+    "heartbeat_interval": 60
+  },
+
+  "logfile": "/freqtrade/user_data/logs/freqtrade_futures.log"
+}

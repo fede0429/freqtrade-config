@@ -1,0 +1,9 @@
+{
+  "market_type": "spot",
+  "portfolio_scope": "studio_spot",
+  "summary_defaults": {
+    "benchmark_symbol": "BTC/USDT",
+    "capital_allocated_usd": 25000,
+    "cash_buffer_ratio": 0.25
+  }
+}

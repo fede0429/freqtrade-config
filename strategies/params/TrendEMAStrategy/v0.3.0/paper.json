@@ -1,0 +1,5 @@
+{
+  "dry_run": true,
+  "risk_budget_fraction": 0.05,
+  "telemetry_tag": "research-paper"
+}

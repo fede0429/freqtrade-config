@@ -1,0 +1,7 @@
+{
+  "environment_name": "prod",
+  "dry_run": false,
+  "api_server": {
+    "username": "prod_admin"
+  }
+}

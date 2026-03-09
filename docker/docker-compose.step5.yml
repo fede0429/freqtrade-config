@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  scanner:
+    image: freqtradeorg/freqtrade:stable
+    container_name: studio-scanner
+    working_dir: /app
+    env_file:
+      - ../config/secrets/.env
+    environment:
+      SCANNER_PROFILE_PATH: /app/config/scanner/runtime/spot.paper.json
+      SCANNER_OUTPUT_PATH: /app/reports/scanner/latest_scan.json
+    volumes:
+      - ..:/app
+    command: >
+      bash -lc "python3 apps/scanner/market_scanner.py
+      --profile ${SCANNER_PROFILE_PATH}
+      --output ${SCANNER_OUTPUT_PATH}
+      --mock"

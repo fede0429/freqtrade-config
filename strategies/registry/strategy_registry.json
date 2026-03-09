@@ -1,0 +1,83 @@
+{
+  "registry_version": "1.0.0",
+  "generated_at": "2026-03-08T21:20:00Z",
+  "lifecycle_order": ["candidate", "dry_run", "canary", "production", "retired"],
+  "strategies": [
+    {
+      "name": "AdaptiveMetaStrategy",
+      "class_name": "AdaptiveMetaStrategy",
+      "market": "spot",
+      "code_path": "strategies/production/AdaptiveMetaStrategy.py",
+      "params_version": "v1.0.0",
+      "params_path": "strategies/params/AdaptiveMetaStrategy/v1.0.0",
+      "lifecycle_stage": "canary",
+      "owner": "studio-core",
+      "risk_profile": "balanced_spot",
+      "upgrade_gate": {
+        "required_backtest_days": 365,
+        "max_backtest_drawdown": 0.18,
+        "min_profit_factor": 1.20,
+        "min_win_rate": 0.42,
+        "dry_run_days": 14,
+        "canary_days": 7
+      }
+    },
+    {
+      "name": "UniversalMACD_V2",
+      "class_name": "UniversalMACD_V2",
+      "market": "spot",
+      "code_path": "strategies/production/UniversalMACD_V2.py",
+      "params_version": "v1.0.0",
+      "params_path": "strategies/params/UniversalMACD_V2/v1.0.0",
+      "lifecycle_stage": "production",
+      "owner": "studio-core",
+      "risk_profile": "defensive_spot",
+      "upgrade_gate": {
+        "required_backtest_days": 365,
+        "max_backtest_drawdown": 0.12,
+        "min_profit_factor": 1.15,
+        "min_win_rate": 0.40,
+        "dry_run_days": 14,
+        "canary_days": 7
+      }
+    },
+    {
+      "name": "UniversalMACD_Futures",
+      "class_name": "UniversalMACD_Futures",
+      "market": "futures",
+      "code_path": "strategies/production/UniversalMACD_Futures.py",
+      "params_version": "v1.0.0",
+      "params_path": "strategies/params/UniversalMACD_Futures/v1.0.0",
+      "lifecycle_stage": "dry_run",
+      "owner": "studio-core",
+      "risk_profile": "restricted_futures",
+      "upgrade_gate": {
+        "required_backtest_days": 540,
+        "max_backtest_drawdown": 0.10,
+        "min_profit_factor": 1.20,
+        "min_win_rate": 0.38,
+        "dry_run_days": 21,
+        "canary_days": 14
+      }
+    },
+    {
+      "name": "TrendEMAStrategy",
+      "class_name": "TrendEMAStrategy",
+      "market": "spot",
+      "code_path": "strategies/candidate/TrendEMAStrategy.py",
+      "params_version": "v0.3.0",
+      "params_path": "strategies/params/TrendEMAStrategy/v0.3.0",
+      "lifecycle_stage": "candidate",
+      "owner": "research",
+      "risk_profile": "research_only",
+      "upgrade_gate": {
+        "required_backtest_days": 365,
+        "max_backtest_drawdown": 0.10,
+        "min_profit_factor": 1.10,
+        "min_win_rate": 0.40,
+        "dry_run_days": 14,
+        "canary_days": 7
+      }
+    }
+  ]
+}

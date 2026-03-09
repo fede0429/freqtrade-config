@@ -1,0 +1,19 @@
+{
+  "market": "futures",
+  "selection": {
+    "top_n": 15,
+    "min_score": 62
+  },
+  "pair_filters": {
+    "min_liquidity_usd": 5000000,
+    "max_volatility_pct": 7.5,
+    "min_momentum_1h_pct": 0.2
+  },
+  "market_regime": {
+    "max_volatility_pct": 8.0
+  },
+  "source": {
+    "trading_config": "config/runtime/futures.paper.dynamic.json",
+    "fixture_path": "data/fixtures/scanner/binance_futures_ohlcv_sample.json"
+  }
+}

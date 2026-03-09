@@ -1,0 +1,184 @@
+---
+# Freqtrade 优化版 Docker Compose 配置
+# 版本：升级版，包含现货 + 永续合约双服务
+# 使用方法：
+#   启动全部：    docker compose up -d
+#   只启动现货：  docker compose up -d freqtrade-spot
+#   查看日志：    docker compose logs -f freqtrade-spot
+#   停止全部：    docker compose down
+
+services:
+
+  # ============================================================
+  # 现货交易服务
+  # ============================================================
+  freqtrade-spot:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade-spot
+    restart: unless-stopped
+
+    # 资源限制（根据服务器配置调整）
+    mem_limit: 2g
+    mem_reservation: 512m
+    cpus: 2.0
+
+    # 端口映射（只暴露给本地，通过 nginx/SSH 隧道访问）
+    ports:
+      - "127.0.0.1:8080:8080"
+
+    # 数据卷映射
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./logs/spot:/freqtrade/user_data/logs"
+
+    # 网络（隔离现货和期货）
+    networks:
+      - freqtrade-network
+
+    # 环境变量（覆盖敏感配置，避免写入 config 文件）
+    environment:
+      - FREQTRADE__EXCHANGE__KEY=${SPOT_API_KEY:-CHANGE_ME}
+      - FREQTRADE__EXCHANGE__SECRET=${SPOT_API_SECRET:-CHANGE_ME}
+      - FREQTRADE__TELEGRAM__TOKEN=${TELEGRAM_TOKEN:-CHANGE_ME}
+      - FREQTRADE__TELEGRAM__CHAT_ID=${TELEGRAM_CHAT_ID:-CHANGE_ME}
+      - FREQTRADE__API_SERVER__PASSWORD=${API_PASSWORD:-CHANGE_ME}
+      - FREQTRADE__API_SERVER__JWT_SECRET_KEY=${JWT_SECRET:-CHANGE_ME_32CHARS}
+
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    # 启动命令
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3_spot.sqlite
+      --config /freqtrade/user_data/config_spot.json
+      --strategy AdaptiveMetaStrategy
+
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  # ============================================================
+  # 永续合约交易服务
+  # ============================================================
+  freqtrade-futures:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade-futures
+    restart: unless-stopped
+
+    # 资源限制（期货策略计算量可能更大）
+    mem_limit: 2g
+    mem_reservation: 512m
+    cpus: 2.0
+
+    # 不同端口
+    ports:
+      - "127.0.0.1:8081:8081"
+
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./logs/futures:/freqtrade/user_data/logs"
+
+    networks:
+      - freqtrade-network
+
+    environment:
+      - FREQTRADE__EXCHANGE__KEY=${FUTURES_API_KEY:-CHANGE_ME}
+      - FREQTRADE__EXCHANGE__SECRET=${FUTURES_API_SECRET:-CHANGE_ME}
+      - FREQTRADE__TELEGRAM__TOKEN=${TELEGRAM_TOKEN:-CHANGE_ME}
+      - FREQTRADE__TELEGRAM__CHAT_ID=${TELEGRAM_CHAT_ID:-CHANGE_ME}
+      - FREQTRADE__API_SERVER__PASSWORD=${API_PASSWORD:-CHANGE_ME}
+      - FREQTRADE__API_SERVER__JWT_SECRET_KEY=${JWT_SECRET_FUTURES:-CHANGE_ME_32CHARS}
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/api/v1/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+    command: >
+      trade
+      --logfile /freqtrade/user_data/logs/freqtrade.log
+      --db-url sqlite:////freqtrade/user_data/tradesv3_futures.sqlite
+      --config /freqtrade/user_data/config_futures.json
+      --strategy UniversalMACD_Futures
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+    # 永续合约服务依赖现货服务先启动（可选，注释掉可独立运行）
+    # depends_on:
+    #   freqtrade-spot:
+    #     condition: service_healthy
+
+  # ============================================================
+  # Hyperopt 工作器（按需运行，不常驻）
+  # 使用方法：docker compose run --rm freqtrade-hyperopt
+  # ============================================================
+  freqtrade-hyperopt:
+    image: freqtradeorg/freqtrade:stable
+    container_name: freqtrade-hyperopt
+    # 不自动重启
+    restart: "no"
+    profiles:
+      - hyperopt  # 只有指定 --profile hyperopt 时才启动
+
+    mem_limit: 4g
+    cpus: 4.0
+
+    volumes:
+      - "./user_data:/freqtrade/user_data"
+      - "./logs/hyperopt:/freqtrade/user_data/logs"
+
+    networks:
+      - freqtrade-network
+
+    environment:
+      - FREQTRADE__EXCHANGE__KEY=${SPOT_API_KEY:-CHANGE_ME}
+      - FREQTRADE__EXCHANGE__SECRET=${SPOT_API_SECRET:-CHANGE_ME}
+
+    # Hyperopt 命令示例（通过 scripts/auto_hyperopt.sh 调用更灵活）
+    command: >
+      hyperopt
+      --config /freqtrade/user_data/config_spot.json
+      --strategy AdaptiveMetaStrategy
+      --hyperopt-loss SharpeHyperOptLoss
+      --spaces buy sell roi stoploss trailing
+      --epochs 300
+      -j -1
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "3"
+
+# ============================================================
+# 网络配置
+# ============================================================
+networks:
+  freqtrade-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# ============================================================
+# 数据卷（可选：使用命名卷持久化）
+# ============================================================
+# volumes:
+#   freqtrade-data:
+#     driver: local

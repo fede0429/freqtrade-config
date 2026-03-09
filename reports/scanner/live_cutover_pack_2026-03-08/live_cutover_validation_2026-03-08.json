@@ -1,0 +1,26 @@
+{
+  "profile_name": "paper",
+  "market": "spot",
+  "exchange_name": "binance",
+  "source_mode": "live",
+  "ccxt_installed": false,
+  "trading_config_exists": true,
+  "runtime_profile_exists": true,
+  "candidate_pairs": [
+    "BTC/USDT",
+    "ETH/USDT",
+    "SOL/USDT",
+    "XRP/USDT",
+    "DOGE/USDT",
+    "AVAX/USDT"
+  ],
+  "universe_count": 6,
+  "live_probe_attempted": false,
+  "live_probe_ok": false,
+  "issues": [
+    "ccxt is not installed in current environment"
+  ],
+  "recommendations": [
+    "Install ccxt on the deployment machine before enabling live scanner."
+  ]
+}

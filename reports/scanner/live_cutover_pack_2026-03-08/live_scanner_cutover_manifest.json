@@ -1,0 +1,14 @@
+{
+  "status": "ready_for_host_probe",
+  "blocking_issues": [
+    "ccxt is not installed in current environment"
+  ],
+  "copied_files": [
+    "spot.paper.live.json",
+    "live_cutover_validation_2026-03-08.json",
+    "live_cutover_validation_2026-03-08.md",
+    "program_status_2026-03-08.json",
+    "paper_run_checklist_2026-03-08.json"
+  ],
+  "next_action": "Run live probe on the deployment host with network access."
+}

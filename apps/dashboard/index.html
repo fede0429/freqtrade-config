@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Daily - Trading Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Studio Daily <span style="font-weight: 300; opacity: 0.6;">Operations</span></h1>
+            <div id="report-date" class="report-date">Loading latest report...</div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Net Daily PnL</div>
+                <div id="net-pnl" class="card-value">--</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Realized / Unrealized</div>
+                <div id="pnl-split" class="card-value" style="font-size: 1.25rem;">--</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Trades (Open/Closed)</div>
+                <div id="trade-count" class="card-value">--</div>
+            </div>
+            <div class="card">
+                <div class="card-title">Market Regime</div>
+                <div id="market-regime" class="card-value" style="font-size: 1.25rem; text-transform: capitalize;">--</div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 2fr 1fr;">
+            <div class="card">
+                <div class="card-title">PnL Performance History</div>
+                <div class="chart-container">
+                    <canvas id="pnl-chart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Risk Status</div>
+                <div id="risk-content">
+                    <div style="margin-top: 1rem;">
+                        <div style="color: var(--text-dim); font-size: 0.8rem;">Current Drawdown</div>
+                        <div id="current-drawdown" style="font-size: 1.5rem; font-weight: 700;">--</div>
+                        <div id="drawdown-bar" style="height: 4px; background: var(--glass-border); border-radius: 2px; margin-top: 0.5rem; overflow: hidden;">
+                            <div id="drawdown-fill" style="height: 100%; width: 0%; background: var(--error); transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <div style="color: var(--text-dim); font-size: 0.8rem;">Guard Status</div>
+                        <div id="guard-status" class="status-badge status-idle" style="display: inline-block; margin-top: 0.5rem;">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">Strategy Health</div>
+                <table id="strategy-table">
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Stage</th>
+                            <th>Exposure</th>
+                            <th>PnL</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="card">
+                <div class="card-title">Top Winners & Losers</div>
+                <div id="performance-lists" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <div style="color: var(--success); font-weight: 600; font-size: 0.8rem; margin-bottom: 0.5rem;">WINNERS</div>
+                        <ul id="winners-list" style="list-style: none; font-size: 0.85rem;"></ul>
+                    </div>
+                    <div>
+                        <div style="color: var(--error); font-weight: 600; font-size: 0.8rem; margin-bottom: 0.5rem;">LOSERS</div>
+                        <ul id="losers-list" style="list-style: none; font-size: 0.85rem;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

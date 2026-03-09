@@ -1,0 +1,17 @@
+{
+  "budget_guard": {
+    "max_notional_usd": 1500,
+    "max_open_positions": 2,
+    "max_daily_loss_usd": 120,
+    "max_drawdown_ratio": 0.03,
+    "max_strategy_allocation_ratio": 0.35,
+    "allowed_release_channel": "canary"
+  },
+  "rollback_guard": {
+    "trigger_on_startup_blocked": true,
+    "trigger_on_release_not_approved": true,
+    "trigger_on_unhealthy_guard": true,
+    "trigger_on_drawdown_breach": true,
+    "trigger_on_budget_breach": true
+  }
+}

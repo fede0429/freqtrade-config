@@ -1,0 +1,39 @@
+{
+  "severity": "high",
+  "alert_count": 1,
+  "as_of_date": null,
+  "incidents": [
+    {
+      "severity": "high",
+      "code": "filled_unreconciled_orders",
+      "message": "2 filled orders have no reconciliation row",
+      "priority": 100,
+      "owner": "execution-ops",
+      "auto_repairable": true,
+      "recommended_script": "scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>",
+      "summary": "2 filled orders have no reconciliation row",
+      "why_it_matters": "Filled orders without trade reconciliation break realized PnL attribution and make execution quality metrics unreliable.",
+      "remediation_steps": [
+        "Run the auto-repair script with a trades DB or execution profile to retry reconciliation for unreconciled filled orders.",
+        "If strong-key mapping is missing, verify external_order_id / venue_order_id propagation from the real executor.",
+        "Replay one affected order to confirm dispatch, fill sync, and reconciliation events line up."
+      ]
+    }
+  ],
+  "trace_coverage": {
+    "db_path": "reports/execution/dispatch_state.sqlite",
+    "tables": {},
+    "overall_ratio": 0.0
+  },
+  "disposition": {
+    "status": "page-now",
+    "highest_severity": "high",
+    "auto_repairable_count": 1,
+    "owners": [
+      "execution-ops"
+    ]
+  },
+  "next_actions": [
+    "filled_unreconciled_orders: 2 filled orders have no reconciliation row Run `scripts/ops/auto_repair_signal_pipeline.py --fix unreconciled --profile <execution_profile>`."
+  ]
+}

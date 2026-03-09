@@ -1,0 +1,8 @@
+{
+  "stage": "canary",
+  "allowed_strategies": ["AdaptiveMetaStrategy"],
+  "default_rollout": {
+    "traffic_share": 0.25,
+    "max_concurrent_strategies": 1
+  }
+}

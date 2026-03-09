@@ -1,0 +1,15 @@
+{
+  "file:dec-001": {
+    "order_status": "partial",
+    "venue_order_id": "venue-dec-001",
+    "average_fill_price": 64120.0,
+    "executed_quantity": 0.4,
+    "fee_amount": 2.56
+  },
+  "file:dec-002": {
+    "order_status": "cancelled",
+    "venue_order_id": "venue-dec-002",
+    "cancelled_at": "2026-03-09T12:00:00+00:00",
+    "last_error": "liquidity timeout"
+  }
+}

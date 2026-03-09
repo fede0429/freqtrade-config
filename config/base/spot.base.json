@@ -1,0 +1,229 @@
+{
+  "$schema": "https://schema.freqtrade.io/schema.json",
+
+  "==== 说明 ====": "现货实盘配置 | 先用 dry_run: true 验证 7 天再切实盘",
+
+  "dry_run": true,
+  "dry_run_wallet": 1000,
+  "cancel_open_orders_on_exit": true,
+
+  "==== 仓位管理 ====": "",
+  "max_open_trades": 5,
+  "stake_currency": "USDT",
+  "stake_amount": "unlimited",
+  "tradable_balance_ratio": 0.7,
+  "available_capital": -1,
+  "amend_last_stake_amount": true,
+  "last_stake_amount_min_ratio": 0.5,
+
+  "fiat_display_currency": "USD",
+
+  "==== 时间框架（由策略覆盖）====": "",
+  "timeframe": "15m",
+
+  "==== 超时设置 ====": "",
+  "unfilledtimeout": {
+    "entry": 10,
+    "exit": 30,
+    "exit_timeout_count": 0,
+    "unit": "minutes"
+  },
+
+  "==== 入场/出场定价 ====": "",
+  "entry_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1,
+    "price_last_balance": 0.0,
+    "check_depth_of_market": {
+      "enabled": false,
+      "bids_to_ask_delta": 1
+    }
+  },
+  "exit_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+
+  "==== 交易所配置 ====": "",
+  "exchange": {
+    "name": "binance",
+    "key": "CHANGE_ME_API_KEY",
+    "secret": "CHANGE_ME_API_SECRET",
+    "ccxt_config": {
+      "enableRateLimit": true
+    },
+    "ccxt_async_config": {
+      "enableRateLimit": true,
+      "rateLimit": 200
+    },
+    "pair_whitelist": [
+      "BTC/USDT",
+      "ETH/USDT",
+      "BNB/USDT",
+      "SOL/USDT",
+      "XRP/USDT",
+      "ADA/USDT",
+      "DOGE/USDT",
+      "AVAX/USDT",
+      "LINK/USDT",
+      "DOT/USDT",
+      "MATIC/USDT",
+      "NEAR/USDT",
+      "ATOM/USDT",
+      "LTC/USDT",
+      "UNI/USDT"
+    ],
+    "pair_blacklist": [
+      "BNB/BTC",
+      ".*UP/USDT",
+      ".*DOWN/USDT",
+      ".*BULL/USDT",
+      ".*BEAR/USDT",
+      ".*LONG/USDT",
+      ".*SHORT/USDT",
+      ".*3L/USDT",
+      ".*3S/USDT"
+    ]
+  },
+
+  "==== 动态交易对筛选 ====": "",
+  "pairlists": [
+    {
+      "method": "VolumePairList",
+      "number_assets": 20,
+      "sort_key": "quoteVolume",
+      "min_value": 0,
+      "refresh_period": 1800
+    },
+    {
+      "method": "AgeFilter",
+      "min_days_listed": 30
+    },
+    {
+      "method": "SpreadFilter",
+      "max_spread_ratio": 0.005
+    },
+    {
+      "method": "RangeStabilityFilter",
+      "lookback_days": 10,
+      "min_rate_of_change": 0.01,
+      "refresh_period": 1440
+    },
+    {
+      "method": "PriceFilter",
+      "low_price_ratio": 0.01,
+      "min_price": 0.00000010,
+      "max_price": 100000
+    },
+    {
+      "method": "ShuffleFilter",
+      "seed": 42
+    }
+  ],
+
+  "==== 订单类型 ====": "",
+  "order_types": {
+    "entry": "limit",
+    "exit": "limit",
+    "emergency_exit": "market",
+    "force_exit": "market",
+    "force_entry": "market",
+    "stoploss": "market",
+    "stoploss_on_exchange": true,
+    "stoploss_on_exchange_interval": 60,
+    "stoploss_on_exchange_limit_ratio": 0.99
+  },
+  "order_time_in_force": {
+    "entry": "GTC",
+    "exit": "GTC"
+  },
+
+  "==== 交易保护 ====": "",
+  "protections": [
+    {
+      "method": "StoplossGuard",
+      "lookback_period_candles": 24,
+      "trade_limit": 2,
+      "stop_duration_candles": 4,
+      "only_per_pair": false
+    },
+    {
+      "method": "MaxDrawdown",
+      "lookback_period_candles": 48,
+      "trade_limit": 5,
+      "stop_duration_candles": 12,
+      "max_allowed_drawdown": 0.15
+    },
+    {
+      "method": "CooldownPeriod",
+      "stop_duration_candles": 2
+    },
+    {
+      "method": "LowProfitPairs",
+      "lookback_period_candles": 60,
+      "trade_limit": 1,
+      "stop_duration_candles": 60,
+      "required_profit": 0.0
+    }
+  ],
+
+  "==== API 服务器 ====": "",
+  "api_server": {
+    "enabled": true,
+    "listen_ip_address": "0.0.0.0",
+    "listen_port": 8080,
+    "verbosity": "error",
+    "enable_openapi": true,
+    "jwt_secret_key": "CHANGE_ME_JWT_SECRET_32_CHARS_MIN",
+    "CORS_origins": ["http://localhost:3000"],
+    "username": "CHANGE_ME_USERNAME",
+    "password": "CHANGE_ME_PASSWORD"
+  },
+
+  "==== Telegram 通知 ====": "",
+  "telegram": {
+    "enabled": true,
+    "token": "CHANGE_ME_BOT_TOKEN",
+    "chat_id": "CHANGE_ME_CHAT_ID",
+    "allow_custom_messages": true,
+    "notification_settings": {
+      "status": "silent",
+      "warning": "on",
+      "startup": "on",
+      "entry": "on",
+      "entry_fill": "on",
+      "entry_cancel": "silent",
+      "exit": {
+        "roi": "silent",
+        "emergency_exit": "on",
+        "force_exit": "on",
+        "exit_signal": "silent",
+        "trailing_stop_loss": "on",
+        "stop_loss": "on",
+        "stoploss_on_exchange": "on",
+        "custom_exit": "silent",
+        "partial_exit": "on"
+      },
+      "exit_cancel": "on",
+      "exit_fill": "silent",
+      "protection_trigger": "on",
+      "protection_trigger_global": "on",
+      "show_candle": "off"
+    }
+  },
+
+  "==== 内部设置 ====": "",
+  "internals": {
+    "process_throttle_secs": 5,
+    "heartbeat_interval": 60
+  },
+
+  "==== 日志 ====": "",
+  "logfile": "/freqtrade/user_data/logs/freqtrade_spot.log",
+
+  "==== 回测/超优化设置（仅回测时使用）====": "",
+  "dataformat_ohlcv": "json",
+  "dataformat_trades": "jsongz"
+}

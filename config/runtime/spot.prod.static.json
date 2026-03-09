@@ -1,0 +1,173 @@
+{
+  "$schema": "https://schema.freqtrade.io/schema.json",
+  "system_role": "studio-trading-spot",
+  "cancel_open_orders_on_exit": true,
+  "stake_currency": "USDT",
+  "stake_amount": "unlimited",
+  "fiat_display_currency": "USD",
+  "timeframe": "15m",
+  "unfilledtimeout": {
+    "entry": 10,
+    "exit": 30,
+    "exit_timeout_count": 0,
+    "unit": "minutes"
+  },
+  "entry_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1,
+    "price_last_balance": 0.0,
+    "check_depth_of_market": {
+      "enabled": false,
+      "bids_to_ask_delta": 1
+    }
+  },
+  "exit_pricing": {
+    "price_side": "same",
+    "use_order_book": true,
+    "order_book_top": 1
+  },
+  "order_types": {
+    "entry": "limit",
+    "exit": "limit",
+    "emergency_exit": "market",
+    "force_exit": "market",
+    "force_entry": "market",
+    "stoploss": "market",
+    "stoploss_on_exchange": true,
+    "stoploss_on_exchange_interval": 60,
+    "stoploss_on_exchange_limit_ratio": 0.99
+  },
+  "order_time_in_force": {
+    "entry": "GTC",
+    "exit": "GTC"
+  },
+  "exchange": {
+    "name": "binance",
+    "key": "OVERRIDDEN_BY_ENV",
+    "secret": "OVERRIDDEN_BY_ENV",
+    "ccxt_config": {
+      "enableRateLimit": true
+    },
+    "ccxt_async_config": {
+      "enableRateLimit": true,
+      "rateLimit": 200
+    },
+    "pair_whitelist": [
+      "BTC/USDT",
+      "ETH/USDT",
+      "BNB/USDT",
+      "SOL/USDT",
+      "XRP/USDT",
+      "ADA/USDT",
+      "DOGE/USDT",
+      "AVAX/USDT",
+      "LINK/USDT",
+      "DOT/USDT",
+      "MATIC/USDT",
+      "NEAR/USDT",
+      "ATOM/USDT",
+      "LTC/USDT",
+      "UNI/USDT"
+    ],
+    "pair_blacklist": [
+      "BNB/BTC",
+      ".*UP/USDT",
+      ".*DOWN/USDT",
+      ".*BULL/USDT",
+      ".*BEAR/USDT",
+      ".*LONG/USDT",
+      ".*SHORT/USDT",
+      ".*3L/USDT",
+      ".*3S/USDT"
+    ]
+  },
+  "api_server": {
+    "enabled": true,
+    "listen_ip_address": "0.0.0.0",
+    "listen_port": 8080,
+    "verbosity": "error",
+    "enable_openapi": true,
+    "jwt_secret_key": "OVERRIDDEN_BY_ENV",
+    "CORS_origins": [
+      "http://localhost:3000"
+    ],
+    "username": "prod_admin",
+    "password": "OVERRIDDEN_BY_ENV"
+  },
+  "telegram": {
+    "enabled": true,
+    "token": "OVERRIDDEN_BY_ENV",
+    "chat_id": "OVERRIDDEN_BY_ENV",
+    "allow_custom_messages": true,
+    "notification_settings": {
+      "status": "silent",
+      "warning": "on",
+      "startup": "on",
+      "entry": "on",
+      "entry_fill": "on",
+      "entry_cancel": "silent",
+      "exit": {
+        "roi": "silent",
+        "emergency_exit": "on",
+        "force_exit": "on",
+        "exit_signal": "silent",
+        "trailing_stop_loss": "on",
+        "stop_loss": "on",
+        "stoploss_on_exchange": "on",
+        "custom_exit": "silent",
+        "partial_exit": "on"
+      },
+      "exit_cancel": "on",
+      "exit_fill": "silent",
+      "protection_trigger": "on",
+      "protection_trigger_global": "on",
+      "show_candle": "off"
+    }
+  },
+  "internals": {
+    "process_throttle_secs": 5,
+    "heartbeat_interval": 60
+  },
+  "max_open_trades": 5,
+  "tradable_balance_ratio": 0.7,
+  "available_capital": -1,
+  "amend_last_stake_amount": true,
+  "last_stake_amount_min_ratio": 0.5,
+  "pair_selection_mode": "static",
+  "pairlists": [
+    {
+      "method": "StaticPairList"
+    }
+  ],
+  "protections": [
+    {
+      "method": "StoplossGuard",
+      "lookback_period_candles": 24,
+      "trade_limit": 2,
+      "stop_duration_candles": 4,
+      "only_per_pair": false
+    },
+    {
+      "method": "MaxDrawdown",
+      "lookback_period_candles": 48,
+      "trade_limit": 5,
+      "stop_duration_candles": 12,
+      "max_allowed_drawdown": 0.15
+    },
+    {
+      "method": "CooldownPeriod",
+      "stop_duration_candles": 2
+    },
+    {
+      "method": "LowProfitPairs",
+      "lookback_period_candles": 60,
+      "trade_limit": 1,
+      "stop_duration_candles": 60,
+      "required_profit": 0.0
+    }
+  ],
+  "logfile": "/freqtrade/user_data/logs/freqtrade_spot.log",
+  "environment_name": "prod",
+  "dry_run": false
+}

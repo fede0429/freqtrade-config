@@ -1,0 +1,9 @@
+{
+  "dryrun:dec_001": {
+    "order_status": "filled",
+    "average_fill_price": 102.25,
+    "executed_quantity": 1.0,
+    "fee_amount": 0.1023,
+    "filled_at": "2026-03-08T09:15:00+00:00"
+  }
+}

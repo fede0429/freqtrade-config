@@ -1,0 +1,80 @@
+{
+  "approved": true,
+  "mode": "release",
+  "environment": "paper",
+  "market_type": "spot",
+  "release_channel": "paper",
+  "checks": [
+    {
+      "name": "file:strategy_manifest",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/strategies/registry/deployment_manifest.json"
+    },
+    {
+      "name": "file:scanner_report",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/reports/scanner/latest_scan.json"
+    },
+    {
+      "name": "file:daily_report",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/reports/operations/daily/studio_daily_report_2026-03-08.json"
+    },
+    {
+      "name": "file:risk_profile",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/config/risk/runtime/spot.paper.json"
+    },
+    {
+      "name": "file:reporting_profile",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/config/reporting/runtime/spot.paper.json"
+    },
+    {
+      "name": "file:trading_config",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/config/runtime/spot.paper.dynamic.json"
+    },
+    {
+      "name": "file:docker_compose",
+      "status": "pass",
+      "detail": "/mnt/data/step9cproj/docker/docker-compose.step6.yml"
+    },
+    {
+      "name": "scanner_selected_pairs",
+      "status": "pass",
+      "detail": "selected=3, minimum=2"
+    },
+    {
+      "name": "guard_status",
+      "status": "pass",
+      "detail": "current=healthy, required=healthy"
+    },
+    {
+      "name": "drawdown_budget",
+      "status": "pass",
+      "detail": "current=0.0018, limit=0.1200"
+    },
+    {
+      "name": "forbidden_stages",
+      "status": "pass",
+      "detail": "none"
+    },
+    {
+      "name": "profile_alignment",
+      "status": "pass",
+      "detail": "reporting=spot, release=spot, trading_hint=spot"
+    },
+    {
+      "name": "scanner_gate",
+      "status": "pass",
+      "detail": "required=True, selected=3"
+    }
+  ],
+  "required_actions": [
+    "Re-render config, risk, scanner, reporting, and strategy manifests before startup.",
+    "Capture preflight artifact and attach it to the operating log."
+  ],
+  "generated_at": "2026-03-08T22:01:46.022280+00:00",
+  "profile_path": "config/release/runtime/spot.paper.json"
+}

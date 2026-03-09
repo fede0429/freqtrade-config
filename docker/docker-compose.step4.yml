@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  freqtrade-spot:
+    extends:
+      file: docker-compose.step3.yml
+      service: freqtrade-spot
+    environment:
+      STRATEGY_REGISTRY_PATH: /freqtrade/strategies/registry/strategy_registry.json
+      STRATEGY_DEPLOYMENT_MANIFEST: /freqtrade/strategies/registry/deployment_manifest.json
+
+  freqtrade-futures:
+    extends:
+      file: docker-compose.step3.yml
+      service: freqtrade-futures
+    environment:
+      STRATEGY_REGISTRY_PATH: /freqtrade/strategies/registry/strategy_registry.json
+      STRATEGY_DEPLOYMENT_MANIFEST: /freqtrade/strategies/registry/deployment_manifest.json
