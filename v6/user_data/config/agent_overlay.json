@@ -1,0 +1,18 @@
+{
+  "shadow_mode": true,
+  "cache_ttl_seconds": 90,
+  "min_confidence_for_live": 0.72,
+  "entry_min_confidence": 0.75,
+  "max_stake_multiplier": 1.5,
+  "fallback_mode": "base_strategy_only",
+  "exit_min_profit_threshold": -0.01,
+  "enabled_callbacks": {
+    "stake": true,
+    "exit": true,
+    "stoploss": true,
+    "roi": false,
+    "entry_confirm": true
+  },
+  "enabled_pairs": ["BTC/USDT", "ETH/USDT"],
+  "rollout_stage": "v6_entry_confirm"
+}
