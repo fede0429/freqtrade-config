@@ -20,6 +20,13 @@
             </div>
         </header>
 
+        <section id="error-banner" class="error-banner" hidden>
+            <div>
+                <p class="error-title">Validation feed unavailable</p>
+                <p id="error-message" class="error-copy">The dashboard will retry automatically.</p>
+            </div>
+        </section>
+
         <section class="summary-grid" id="summary-grid">
             <article class="metric-card">
                 <p class="metric-label">Overall Status</p>
@@ -44,6 +51,11 @@
         </section>
 
         <section class="panel-grid" id="bot-panels"></section>
+
+        <section id="empty-state" class="empty-state" hidden>
+            <p class="empty-title">No bot payload available yet</p>
+            <p class="empty-copy">The validation feed is reachable, but it has not published any bot cards yet.</p>
+        </section>
     </div>
 
     <template id="bot-template">

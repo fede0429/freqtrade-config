@@ -82,6 +82,40 @@ h1 {
     color: var(--muted);
 }
 
+.error-banner,
+.empty-state,
+.metric-card,
+.bot-card {
+    background: linear-gradient(180deg, rgba(21, 33, 48, 0.96), rgba(16, 25, 35, 0.96));
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.error-banner,
+.empty-state {
+    padding: 18px 20px;
+    margin-bottom: 20px;
+}
+
+.error-banner {
+    border-color: rgba(255, 123, 123, 0.35);
+    background: linear-gradient(180deg, rgba(68, 24, 24, 0.92), rgba(41, 17, 17, 0.94));
+}
+
+.error-title,
+.empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.error-copy,
+.empty-copy {
+    color: var(--muted);
+    line-height: 1.6;
+}
+
 .summary-grid,
 .panel-grid {
     display: grid;
@@ -99,10 +133,7 @@ h1 {
 
 .metric-card,
 .bot-card {
-    background: linear-gradient(180deg, rgba(21, 33, 48, 0.96), rgba(16, 25, 35, 0.96));
-    border: 1px solid var(--line);
     border-radius: 20px;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
 .metric-card {
