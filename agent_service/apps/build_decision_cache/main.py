@@ -19,11 +19,14 @@ def load_input() -> dict:
     return payload if isinstance(payload, dict) else {"signals": []}
 
 
-def cache_timestamp(payload: dict) -> str:
+def source_timestamp(payload: dict) -> str | None:
     source_ts = payload.get("ts")
-    if isinstance(source_ts, str) and source_ts:
-        return source_ts
-    return utc_now()
+    return source_ts if isinstance(source_ts, str) and source_ts else None
+
+
+def cache_ts_mode(payload: dict) -> str:
+    mode = str(payload.get("cache_ts_mode", "source")).lower()
+    return "build" if mode == "build" else "source"
 
 
 def transform(payload: dict) -> dict:
@@ -45,8 +48,12 @@ def transform(payload: dict) -> dict:
             "target_profit_ratio": item.get("target_profit_ratio"),
             "governance_gate": item.get("governance_gate", "blocked"),
         }
+
+    built_at = utc_now()
     return {
-        "ts": cache_timestamp(payload),
+        "ts": source_timestamp(payload) or built_at,
+        "built_at": built_at,
+        "cache_ts_mode": cache_ts_mode(payload),
         "source": payload.get("source", "build_decision_cache"),
         "pairs": pairs,
     }

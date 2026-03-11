@@ -67,6 +67,12 @@ class AgentBridgeStrategy(BaseStrategy):
         allowed = [p.upper() for p in self._overlay.get("enabled_pairs", [])]
         return not allowed or pair.upper() in allowed
 
+    def _cache_reference_timestamp(self) -> str | None:
+        mode = str(self._cache.get("cache_ts_mode", "source")).lower()
+        if mode == "build":
+            return self._cache.get("built_at") or self._cache.get("ts")
+        return self._cache.get("ts") or self._cache.get("built_at")
+
     def _cache_is_fresh(self, reference_time: datetime | None = None) -> bool:
         if (
             self._runmode_name() in {"backtest", "hyperopt"}
@@ -79,7 +85,7 @@ class AgentBridgeStrategy(BaseStrategy):
         if ttl <= 0:
             return True
 
-        ts = self._cache.get("ts")
+        ts = self._cache_reference_timestamp()
         if not ts:
             return False
 
@@ -103,8 +109,29 @@ class AgentBridgeStrategy(BaseStrategy):
             return False
         return bool(decision.get("agent_enabled", False))
 
-    def _trace(self, filename: str, payload: dict[str, Any]) -> None:
-        self.audit.append_event(filename, payload)
+    def _should_write_trace(self) -> bool:
+        if self._runmode_name() in {"backtest", "hyperopt"}:
+            return bool(self._overlay.get("write_traces_in_backtest", False))
+        return True
+
+    def _serialize_value(self, value: Any) -> Any:
+        if isinstance(value, datetime):
+            normalized = self._normalize_time(value)
+            return normalized.isoformat() if normalized else None
+        if isinstance(value, dict):
+            return {str(key): self._serialize_value(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [self._serialize_value(item) for item in value]
+        return value
+
+    def _trace(self, filename: str, payload: dict[str, Any], event_time: datetime | None = None) -> None:
+        if not self._should_write_trace():
+            return
+        row = self._serialize_value(payload)
+        if event_time is not None:
+            normalized = self._normalize_time(event_time)
+            row["event_time"] = normalized.isoformat() if normalized else str(event_time)
+        self.audit.append_event(filename, row)
 
     def _call_parent(self, method_name: str, *args, **kwargs):
         parent = getattr(super(), method_name, None)
@@ -147,30 +174,49 @@ class AgentBridgeStrategy(BaseStrategy):
                 "shadow_mode": self.shadow_mode,
                 "enabled_callbacks": self.enabled_callbacks,
                 "cache_fresh": self._cache_is_fresh(current_time),
+                "cache_ts_mode": self._cache.get("cache_ts_mode", "source"),
                 "runmode": self._runmode_name(),
                 "pair_count": len(self._cache.get("pairs", {})),
             },
+            current_time,
         )
         return self._call_parent("bot_loop_start", current_time, **kwargs)
 
     def custom_stake_amount(self, pair: str, current_time, current_rate: float, proposed_stake: float, min_stake, max_stake: float, leverage: float, entry_tag, side: str, **kwargs):
+        parent_stake = self._call_parent(
+            "custom_stake_amount",
+            pair,
+            current_time,
+            current_rate,
+            proposed_stake,
+            min_stake,
+            max_stake,
+            leverage,
+            entry_tag,
+            side,
+            **kwargs,
+        )
+        parent_stake_value = self._as_float(parent_stake)
+        base_stake = parent_stake_value if parent_stake_value is not None else proposed_stake
         decision = self._pair_decision(pair)
         base = {
             "pair": pair,
             "mode": "shadow" if self.shadow_mode else "live",
             "proposed_stake": proposed_stake,
+            "parent_stake": parent_stake,
+            "base_stake": base_stake,
             "decision": decision,
             "cache_fresh": self._cache_is_fresh(current_time),
             "pair_allowed": self._pair_allowed(pair),
         }
-        self._trace("stake_decision_trace.jsonl", base)
+        self._trace("stake_decision_trace.jsonl", base, current_time)
 
         if self.shadow_mode or not self.enabled_callbacks.get("stake", False):
-            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "shadow_or_disabled"})
-            return proposed_stake
+            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "shadow_or_disabled"}, current_time)
+            return base_stake
         if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "agent_not_enabled"})
-            return proposed_stake
+            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
+            return base_stake
 
         confidence = float(decision.get("confidence", 0.0))
         min_conf = float(self._overlay.get("min_confidence_for_live", 0.72))
@@ -178,14 +224,15 @@ class AgentBridgeStrategy(BaseStrategy):
             self._trace(
                 "stake_fallback_trace.jsonl",
                 {**base, "reason": "confidence_below_threshold", "confidence": confidence},
+                current_time,
             )
-            return proposed_stake
+            return base_stake
 
         multiplier = min(
             float(decision.get("stake_multiplier", 1.0)),
             float(self._overlay.get("max_stake_multiplier", 1.50)),
         )
-        stake = proposed_stake * multiplier
+        stake = base_stake * multiplier
         if max_stake:
             stake = min(stake, max_stake)
         if min_stake:
@@ -194,6 +241,7 @@ class AgentBridgeStrategy(BaseStrategy):
         self._trace(
             "stake_apply_trace.jsonl",
             {**base, "confidence": confidence, "multiplier": multiplier, "final_stake": stake},
+            current_time,
         )
         return max(stake, 0.0)
 
@@ -217,19 +265,19 @@ class AgentBridgeStrategy(BaseStrategy):
             "decision": decision,
             "parent_exit": parent_exit,
         }
-        self._trace("exit_shadow_trace.jsonl", base)
+        self._trace("exit_shadow_trace.jsonl", base, current_time)
 
         if self.shadow_mode or not self.enabled_callbacks.get("exit", False):
             return parent_exit
         if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("exit_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            self._trace("exit_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
             return parent_exit
         if current_profit < min_profit and not bool(decision.get("force_exit_on_loss", False)):
-            self._trace("exit_skip_trace.jsonl", {**base, "reason": "profit_below_threshold"})
+            self._trace("exit_skip_trace.jsonl", {**base, "reason": "profit_below_threshold"}, current_time)
             return parent_exit
         if bool(decision.get("exit_signal", False)):
             reason = decision.get("exit_reason", "agent_exit_signal")
-            self._trace("exit_apply_trace.jsonl", {**base, "reason": reason})
+            self._trace("exit_apply_trace.jsonl", {**base, "reason": reason}, current_time)
             return reason
         return parent_exit
 
@@ -252,20 +300,20 @@ class AgentBridgeStrategy(BaseStrategy):
             "decision": decision,
             "parent_stoploss": parent_stoploss,
         }
-        self._trace("stoploss_shadow_trace.jsonl", base)
+        self._trace("stoploss_shadow_trace.jsonl", base, current_time)
 
         if self.shadow_mode or not self.enabled_callbacks.get("stoploss", False):
             return parent_stoploss
         if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
             return parent_stoploss
         if decision.get("stoploss_mode") != "tighten_only":
-            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "mode_not_tighten_only"})
+            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "mode_not_tighten_only"}, current_time)
             return parent_stoploss
 
         agent_stop = self._as_float(decision.get("agent_stoploss"))
         if agent_stop is None:
-            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "missing_agent_stop"})
+            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "missing_agent_stop"}, current_time)
             return parent_stoploss
 
         parent_stop_value = self._as_float(parent_stoploss)
@@ -273,10 +321,22 @@ class AgentBridgeStrategy(BaseStrategy):
         self._trace(
             "stoploss_apply_trace.jsonl",
             {**base, "agent_stoploss": agent_stop, "applied_stoploss": applied_stop},
+            current_time,
         )
         return applied_stop
 
     def custom_roi(self, pair: str, trade, current_time, trade_duration: int, entry_tag, side: str, **kwargs):
+        parent_roi = self._call_parent(
+            "custom_roi",
+            pair,
+            trade,
+            current_time,
+            trade_duration,
+            entry_tag,
+            side,
+            **kwargs,
+        )
+        parent_roi_value = self._as_float(parent_roi)
         decision = self._pair_decision(pair)
         min_duration = int(self._overlay.get("roi_min_trade_duration", 5))
         base = {
@@ -285,27 +345,46 @@ class AgentBridgeStrategy(BaseStrategy):
             "trade_duration": trade_duration,
             "min_trade_duration": min_duration,
             "decision": decision,
+            "parent_roi": parent_roi,
         }
-        self._trace("roi_shadow_trace.jsonl", base)
+        self._trace("roi_shadow_trace.jsonl", base, current_time)
 
         if self.shadow_mode or not self.enabled_callbacks.get("roi", False):
-            return None
+            return parent_roi_value
         if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("roi_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
-            return None
+            self._trace("roi_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
+            return parent_roi_value
         if trade_duration < min_duration:
-            self._trace("roi_skip_trace.jsonl", {**base, "reason": "duration_below_threshold"})
-            return None
+            self._trace("roi_skip_trace.jsonl", {**base, "reason": "duration_below_threshold"}, current_time)
+            return parent_roi_value
 
-        roi_value, roi_source = self._resolve_agent_roi(decision)
-        if roi_value is None:
-            self._trace("roi_skip_trace.jsonl", {**base, "reason": roi_source})
-            return None
+        agent_roi, roi_source = self._resolve_agent_roi(decision)
+        if agent_roi is None:
+            self._trace("roi_skip_trace.jsonl", {**base, "reason": roi_source}, current_time)
+            return parent_roi_value
 
-        self._trace("roi_apply_trace.jsonl", {**base, "roi_value": roi_value, "roi_source": roi_source})
-        return roi_value
+        applied_roi = agent_roi if parent_roi_value is None else min(parent_roi_value, agent_roi)
+        self._trace(
+            "roi_apply_trace.jsonl",
+            {**base, "agent_roi": agent_roi, "roi_value": applied_roi, "roi_source": roi_source},
+            current_time,
+        )
+        return applied_roi
 
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float, rate: float, time_in_force: str, current_time, entry_tag, side: str, **kwargs) -> bool:
+        parent_entry = self._call_parent(
+            "confirm_trade_entry",
+            pair,
+            order_type,
+            amount,
+            rate,
+            time_in_force,
+            current_time,
+            entry_tag,
+            side,
+            **kwargs,
+        )
+        parent_allowed = True if parent_entry is None else bool(parent_entry)
         decision = self._pair_decision(pair)
         base = {
             "pair": pair,
@@ -314,14 +393,18 @@ class AgentBridgeStrategy(BaseStrategy):
             "rate": rate,
             "entry_tag": entry_tag,
             "decision": decision,
+            "parent_entry_allowed": parent_allowed,
         }
-        self._trace("entry_confirm_trace.jsonl", base)
+        self._trace("entry_confirm_trace.jsonl", base, current_time)
 
+        if not parent_allowed:
+            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "parent_blocked"}, current_time)
+            return False
         if self.shadow_mode or not self.enabled_callbacks.get("entry_confirm", False):
-            return True
+            return parent_allowed
         if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("entry_confirm_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
-            return True
+            self._trace("entry_confirm_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
+            return parent_allowed
 
         confidence = float(decision.get("confidence", 0.0))
         min_conf = float(self._overlay.get("entry_min_confidence", 0.75))
@@ -329,11 +412,12 @@ class AgentBridgeStrategy(BaseStrategy):
             self._trace(
                 "entry_confirm_block_trace.jsonl",
                 {**base, "reason": "confidence_below_threshold", "confidence": confidence},
+                current_time,
             )
             return False
         if not bool(decision.get("entry_allowed", True)):
-            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "entry_allowed_false"})
+            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "entry_allowed_false"}, current_time)
             return False
 
-        self._trace("entry_confirm_apply_trace.jsonl", {**base, "applied": True})
-        return True
+        self._trace("entry_confirm_apply_trace.jsonl", {**base, "applied": True}, current_time)
+        return parent_allowed

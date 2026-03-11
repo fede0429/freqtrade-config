@@ -1,11 +1,16 @@
 from __future__ import annotations
 import json
+import os
+import re
 from pathlib import Path
 from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[4]
-AUDIT_DIR = ROOT / "user_data/agent_runtime/audit"
+AUDIT_ROOT = ROOT / "user_data/agent_runtime/audit"
+STATE_DIR = ROOT / "user_data/agent_runtime/state"
+CURRENT_RUN_ID_FILE = STATE_DIR / "current_run_id.txt"
 OUT_DIR = ROOT / "v8/agent_service/reports"
+RUN_ID_PATTERN = re.compile(r"[^A-Za-z0-9_.-]+")
 TRACE_FILES = [
     "stake_decision_trace.jsonl",
     "stake_apply_trace.jsonl",
@@ -18,6 +23,28 @@ TRACE_FILES = [
     "roi_shadow_trace.jsonl",
     "roi_apply_trace.jsonl",
 ]
+
+
+def sanitize_run_id(value: str) -> str:
+    cleaned = RUN_ID_PATTERN.sub("-", value).strip("-._")
+    return cleaned
+
+
+def resolve_run_id() -> str:
+    env_value = os.environ.get("AGENT_RUN_ID", "").strip()
+    if env_value:
+        return sanitize_run_id(env_value)
+    if CURRENT_RUN_ID_FILE.exists():
+        file_value = CURRENT_RUN_ID_FILE.read_text(encoding="utf-8-sig").strip()
+        if file_value:
+            return sanitize_run_id(file_value)
+    return ""
+
+
+def resolve_audit_dir(run_id: str) -> Path:
+    if run_id:
+        return AUDIT_ROOT / run_id
+    return AUDIT_ROOT
 
 
 def load_jsonl(path: Path):
@@ -37,9 +64,11 @@ def load_jsonl(path: Path):
 
 
 def main():
+    run_id = resolve_run_id()
+    audit_dir = resolve_audit_dir(run_id)
     summary = {}
     for name in TRACE_FILES:
-        rows = load_jsonl(AUDIT_DIR / name)
+        rows = load_jsonl(audit_dir / name)
         summary[name] = {
             "count": len(rows),
             "sample": rows[-3:] if rows else [],
@@ -48,13 +77,21 @@ def main():
     pack = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "kind": "replay_compare_pack",
+        "run_id": run_id or None,
+        "audit_dir": str(audit_dir.relative_to(ROOT)) if audit_dir.exists() else str(audit_dir),
         "summary": summary,
     }
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out = OUT_DIR / "replay_compare_pack.json"
-    out.write_text(json.dumps(pack, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(out)
+    payload = json.dumps(pack, indent=2, ensure_ascii=False)
+    latest_out = OUT_DIR / "replay_compare_pack.json"
+    latest_out.write_text(payload, encoding="utf-8")
+    if run_id:
+        scoped_out = OUT_DIR / f"replay_compare_pack_{run_id}.json"
+        scoped_out.write_text(payload, encoding="utf-8")
+        print(scoped_out)
+        return
+    print(latest_out)
 
 
 if __name__ == "__main__":

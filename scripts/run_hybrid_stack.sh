@@ -3,6 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+STATE_DIR="${ROOT_DIR}/user_data/agent_runtime/state"
+AUDIT_ROOT="${ROOT_DIR}/user_data/agent_runtime/audit"
 
 if [[ "${1:-}" == "--" ]]; then
   shift
@@ -13,6 +15,15 @@ if [[ "$#" -eq 0 ]]; then
   echo "Example: scripts/run_hybrid_stack.sh freqtrade trade --config user_data/config.json --strategy AgentBridgeStrategy" >&2
   exit 1
 fi
+
+if [[ -z "${AGENT_RUN_ID:-}" ]]; then
+  AGENT_RUN_ID="run-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+fi
+export AGENT_RUN_ID
+mkdir -p "${STATE_DIR}" "${AUDIT_ROOT}/${AGENT_RUN_ID}"
+printf '%s\n' "${AGENT_RUN_ID}" > "${STATE_DIR}/current_run_id.txt"
+
+echo "[stack] AGENT_RUN_ID=${AGENT_RUN_ID}"
 
 cleanup() {
   if [[ -n "${AGENT_WATCH_PID:-}" ]]; then

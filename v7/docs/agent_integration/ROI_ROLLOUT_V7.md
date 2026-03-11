@@ -10,4 +10,5 @@ Checks:
 - `trade_duration` must pass the configured minimum.
 - `target_profit_ratio` can be used directly.
 - `target_rr` must be converted with a stop reference before it becomes a Freqtrade ROI value.
+- Parent strategy ROI should be preserved when the bridge is disabled or skipped.
 - ROI should apply only after the callback is enabled outside shadow mode.

@@ -1,6 +1,7 @@
 {
   "ts": "2026-03-11T12:00:00Z",
   "source": "agent_service_v24",
+  "cache_ts_mode": "build",
   "signals": [
     {
       "pair": "BTC/USDT",
