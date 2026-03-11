@@ -3,95 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Daily - Trading Dashboard</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Paper Validation Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <header>
-            <h1>Studio Daily <span style="font-weight: 300; opacity: 0.6;">Operations</span></h1>
-            <div id="report-date" class="report-date">Loading latest report...</div>
+    <div class="page-shell">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">Validation Window</p>
+                <h1>Spot + Futures Paper Verification</h1>
+                <p class="hero-copy">Track both bots from one page while the validation run is still dry-run only.</p>
+            </div>
+            <div class="hero-meta">
+                <div id="generated-at" class="pill">Refreshing...</div>
+                <div id="timezone-note" class="pill pill-muted">Loading timezone...</div>
+            </div>
         </header>
 
-        <div class="grid">
-            <div class="card">
-                <div class="card-title">Net Daily PnL</div>
-                <div id="net-pnl" class="card-value">--</div>
-            </div>
-            <div class="card">
-                <div class="card-title">Realized / Unrealized</div>
-                <div id="pnl-split" class="card-value" style="font-size: 1.25rem;">--</div>
-            </div>
-            <div class="card">
-                <div class="card-title">Trades (Open/Closed)</div>
-                <div id="trade-count" class="card-value">--</div>
-            </div>
-            <div class="card">
-                <div class="card-title">Market Regime</div>
-                <div id="market-regime" class="card-value" style="font-size: 1.25rem; text-transform: capitalize;">--</div>
-            </div>
-        </div>
+        <section class="summary-grid" id="summary-grid">
+            <article class="metric-card">
+                <p class="metric-label">Overall Status</p>
+                <h2 id="overall-status">--</h2>
+                <p id="overall-detail" class="metric-subtext">Loading...</p>
+            </article>
+            <article class="metric-card">
+                <p class="metric-label">Total Paper Wallet</p>
+                <h2 id="total-wallet">--</h2>
+                <p class="metric-subtext">Spot + futures total simulated wallet</p>
+            </article>
+            <article class="metric-card">
+                <p class="metric-label">Bot-Allocated Capital</p>
+                <h2 id="allocated-wallet">--</h2>
+                <p class="metric-subtext">Capital currently owned by the bots after balance ratios</p>
+            </article>
+            <article class="metric-card">
+                <p class="metric-label">Validation Activity</p>
+                <h2 id="total-trades">--</h2>
+                <p id="activity-detail" class="metric-subtext">Loading...</p>
+            </article>
+        </section>
 
-        <div class="grid" style="grid-template-columns: 2fr 1fr;">
-            <div class="card">
-                <div class="card-title">PnL Performance History</div>
-                <div class="chart-container">
-                    <canvas id="pnl-chart"></canvas>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">Risk Status</div>
-                <div id="risk-content">
-                    <div style="margin-top: 1rem;">
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">Current Drawdown</div>
-                        <div id="current-drawdown" style="font-size: 1.5rem; font-weight: 700;">--</div>
-                        <div id="drawdown-bar" style="height: 4px; background: var(--glass-border); border-radius: 2px; margin-top: 0.5rem; overflow: hidden;">
-                            <div id="drawdown-fill" style="height: 100%; width: 0%; background: var(--error); transition: width 0.5s ease;"></div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 1.5rem;">
-                        <div style="color: var(--text-dim); font-size: 0.8rem;">Guard Status</div>
-                        <div id="guard-status" class="status-badge status-idle" style="display: inline-block; margin-top: 0.5rem;">--</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid">
-            <div class="card">
-                <div class="card-title">Strategy Health</div>
-                <table id="strategy-table">
-                    <thead>
-                        <tr>
-                            <th>Strategy</th>
-                            <th>Stage</th>
-                            <th>Exposure</th>
-                            <th>PnL</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            <div class="card">
-                <div class="card-title">Top Winners & Losers</div>
-                <div id="performance-lists" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <div style="color: var(--success); font-weight: 600; font-size: 0.8rem; margin-bottom: 0.5rem;">WINNERS</div>
-                        <ul id="winners-list" style="list-style: none; font-size: 0.85rem;"></ul>
-                    </div>
-                    <div>
-                        <div style="color: var(--error); font-weight: 600; font-size: 0.8rem; margin-bottom: 0.5rem;">LOSERS</div>
-                        <ul id="losers-list" style="list-style: none; font-size: 0.85rem;"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <section class="panel-grid" id="bot-panels"></section>
     </div>
+
+    <template id="bot-template">
+        <article class="bot-card">
+            <div class="bot-head">
+                <div>
+                    <p class="bot-market"></p>
+                    <h3 class="bot-name"></h3>
+                </div>
+                <span class="status-pill">--</span>
+            </div>
+
+            <div class="bot-metrics">
+                <div class="bot-stat">
+                    <span class="stat-label">Strategy</span>
+                    <strong class="strategy-value">--</strong>
+                </div>
+                <div class="bot-stat">
+                    <span class="stat-label">Mode</span>
+                    <strong class="mode-value">--</strong>
+                </div>
+                <div class="bot-stat">
+                    <span class="stat-label">Wallet</span>
+                    <strong class="wallet-value">--</strong>
+                </div>
+                <div class="bot-stat">
+                    <span class="stat-label">Allocated</span>
+                    <strong class="allocated-value">--</strong>
+                </div>
+                <div class="bot-stat">
+                    <span class="stat-label">Trades</span>
+                    <strong class="trades-value">--</strong>
+                </div>
+                <div class="bot-stat">
+                    <span class="stat-label">Scanner</span>
+                    <strong class="scanner-value">--</strong>
+                </div>
+            </div>
+
+            <div class="bot-detail-grid">
+                <div class="detail-block">
+                    <p class="detail-title">Validation Checklist</p>
+                    <ul class="check-list">
+                        <li><span>Dry-run</span><strong class="dry-run-value">--</strong></li>
+                        <li><span>Guard</span><strong class="guard-value">--</strong></li>
+                        <li><span>Preflight</span><strong class="preflight-value">--</strong></li>
+                        <li><span>First Trade</span><strong class="first-trade-value">--</strong></li>
+                    </ul>
+                </div>
+                <div class="detail-block">
+                    <p class="detail-title">Runtime Detail</p>
+                    <ul class="check-list">
+                        <li><span>Timeframe</span><strong class="timeframe-value">--</strong></li>
+                        <li><span>Margin</span><strong class="margin-value">--</strong></li>
+                        <li><span>Winrate</span><strong class="winrate-value">--</strong></li>
+                        <li><span>Drawdown</span><strong class="drawdown-value">--</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="detail-block">
+                <p class="detail-title">Top Approved Pairs</p>
+                <div class="pairs-list"></div>
+            </div>
+
+            <div class="detail-block">
+                <p class="detail-title">Heartbeat</p>
+                <p class="heartbeat-line"></p>
+            </div>
+
+            <div class="detail-block issues-block">
+                <p class="detail-title">Current Notes</p>
+                <ul class="issues-list"></ul>
+            </div>
+        </article>
+    </template>
+
     <script src="app.js"></script>
 </body>
 </html>

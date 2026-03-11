@@ -59,14 +59,25 @@ def load_reporting_input(profile: dict[str, Any]) -> ReportingInput:
     return ReportingInput(payload=load_json(path), source_meta={'type': 'json', 'path': path})
 
 
-
-
 def load_optional_signal_pipeline(profile: dict[str, Any], as_of_date: str) -> dict[str, Any]:
     paths = profile.get('paths', {})
     db_path = paths.get('signal_pipeline_db')
     if not db_path:
         return {'available': False, 'execution_funnel': {}, 'missed_alpha': {}}
     return load_signal_pipeline_summary(db_path, as_of_date, paths.get('execution_state_db'))
+
+
+def _trade_column_set(conn: sqlite3.Connection) -> set[str]:
+    return {str(row[1]) for row in conn.execute('PRAGMA table_info(trades)')}
+
+
+def _best_column(columns: set[str], *candidates: str, default_sql: str = '0.0') -> str:
+    for candidate in candidates:
+        if candidate in columns:
+            return candidate
+    return default_sql
+
+
 def load_freqtrade_sqlite(
     db_path: str | Path,
     as_of_date: str,
@@ -81,19 +92,27 @@ def load_freqtrade_sqlite(
     conn = sqlite3.connect(str(db))
     conn.row_factory = sqlite3.Row
     try:
+        trade_columns = _trade_column_set(conn)
+        profit_abs_col = _best_column(trade_columns, 'close_profit_abs', 'profit_abs', 'realized_profit')
+        profit_ratio_col = _best_column(trade_columns, 'close_profit', 'profit_ratio')
+        strategy_col = _best_column(trade_columns, 'strategy', default_sql="''")
+        trade_duration_col = _best_column(trade_columns, 'trade_duration', default_sql='0')
+        stake_amount_col = _best_column(trade_columns, 'stake_amount', 'open_trade_value')
+        is_short_col = _best_column(trade_columns, 'is_short', default_sql='0')
+
         start_ts = f'{as_of_date}T00:00:00+00:00'
         end_ts = f'{as_of_date}T23:59:59+00:00'
         closed = [
             dict(row)
             for row in conn.execute(
-                '''
+                f'''
                 SELECT
                     pair,
-                    strategy,
-                    COALESCE(profit_abs, 0.0) AS pnl_usd,
-                    COALESCE(profit_ratio, 0.0) AS profit_ratio,
+                    {strategy_col} AS strategy,
+                    COALESCE({profit_abs_col}, 0.0) AS pnl_usd,
+                    COALESCE({profit_ratio_col}, 0.0) AS profit_ratio,
                     close_date,
-                    trade_duration,
+                    COALESCE({trade_duration_col}, 0) AS trade_duration,
                     COALESCE(fee_open, 0.0) + COALESCE(fee_close, 0.0) AS fees
                 FROM trades
                 WHERE is_open = 0
@@ -108,13 +127,13 @@ def load_freqtrade_sqlite(
         open_positions = [
             dict(row)
             for row in conn.execute(
-                '''
+                f'''
                 SELECT
                     pair,
-                    strategy,
-                    CASE WHEN COALESCE(is_short, 0) = 1 THEN 'short' ELSE 'long' END AS side,
-                    COALESCE(stake_amount, 0.0) AS exposure_usd,
-                    ((COALESCE(amount, 0.0) * COALESCE(open_rate, 0.0)) - COALESCE(stake_amount, 0.0)) AS pnl_usd,
+                    {strategy_col} AS strategy,
+                    CASE WHEN COALESCE({is_short_col}, 0) = 1 THEN 'short' ELSE 'long' END AS side,
+                    COALESCE({stake_amount_col}, 0.0) AS exposure_usd,
+                    0.0 AS pnl_usd,
                     open_date
                 FROM trades
                 WHERE is_open = 1

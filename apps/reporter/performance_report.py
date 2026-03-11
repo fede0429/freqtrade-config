@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from services.analytics import DailyReportBuilder, write_outputs
+from services.analytics.daily_report_builder import DailyReportBuilder, write_outputs
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description='Build daily studio operations report')
@@ -27,3 +27,4 @@ def main() -> int:
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

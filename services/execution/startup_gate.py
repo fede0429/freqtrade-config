@@ -22,6 +22,7 @@ class StartupBundle:
     daily_report: str
     strategy_manifest: str
     docker_compose: str
+    compose_env_file: str | None
     service_name: str
     command_preview: list[str]
     generated_at: str
@@ -42,6 +43,7 @@ class StartupBundle:
             'daily_report': self.daily_report,
             'strategy_manifest': self.strategy_manifest,
             'docker_compose': self.docker_compose,
+            'compose_env_file': self.compose_env_file,
             'service_name': self.service_name,
             'command_preview': self.command_preview,
             'generated_at': self.generated_at,
@@ -71,9 +73,16 @@ class StartupGate:
         paths = self.profile['paths']
         service_name = 'freqtrade-futures' if self.profile['market_type'] == 'futures' else 'freqtrade-spot'
         compose_file = self.root / paths['docker_compose']
-        command_preview = [
-            'docker', 'compose', '-f', str(compose_file), 'up', '-d', service_name
-        ]
+        compose_env_file_rel = paths.get('compose_env_file')
+
+        command_preview = ['docker', 'compose']
+        if compose_env_file_rel:
+            compose_env_file = self.root / compose_env_file_rel
+            command_preview.extend(['--env-file', str(compose_env_file)])
+        else:
+            compose_env_file = None
+        command_preview.extend(['-f', str(compose_file), 'up', '-d', service_name])
+
         startup_target = self.profile.get('deployment_target', service_name)
         startup_mode = 'armed' if approved else 'blocked'
         return StartupBundle(
@@ -88,6 +97,7 @@ class StartupGate:
             daily_report=paths['daily_report'],
             strategy_manifest=paths['strategy_manifest'],
             docker_compose=paths['docker_compose'],
+            compose_env_file=compose_env_file_rel,
             service_name=service_name,
             command_preview=command_preview,
             generated_at=datetime.now(timezone.utc).isoformat(),

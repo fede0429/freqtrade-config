@@ -1,34 +1,32 @@
 import http.server
 import socketserver
-import json
-import os
 from pathlib import Path
 
 PORT = 9000
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DASHBOARD_DIR = Path(__file__).resolve().parent
-REPORTS_DIR = ROOT_DIR / "reports" / "operations" / "daily"
+VALIDATION_PAYLOAD = ROOT_DIR / "reports" / "operations" / "validation" / "validation_dashboard_latest.json"
+
 
 class DashboardHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(DASHBOARD_DIR), **kwargs)
 
     def do_GET(self):
-        if self.path == '/api/latest-report':
+        if self.path in {"/api/validation-summary", "/data/validation_dashboard_latest.json"}:
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header("Content-type", "application/json")
             self.end_headers()
-            
-            # Find the latest JSON report
-            reports = list(REPORTS_DIR.glob("*.json"))
-            if not reports:
-                self.wfile.write(json.dumps({"error": "No reports found"}).encode())
+
+            if not VALIDATION_PAYLOAD.exists():
+                self.wfile.write(b'{"error":"validation payload not found"}')
                 return
-            
-            latest_report = max(reports, key=lambda p: p.stat().st_mtime)
-            self.wfile.write(latest_report.read_bytes())
-        else:
-            return super().do_GET()
+
+            self.wfile.write(VALIDATION_PAYLOAD.read_bytes())
+            return
+
+        return super().do_GET()
+
 
 with socketserver.TCPServer(("", PORT), DashboardHandler) as httpd:
     actual_port = httpd.socket.getsockname()[1]

@@ -1,0 +1,28 @@
+services:
+  freqtrade-spot:
+    image: freqtradeorg/freqtrade:stable
+    container_name: studio-freqtrade-spot
+    restart: unless-stopped
+    env_file:
+      - ../config/secrets/.env
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ../:/workspace
+      - ../logs/spot:/freqtrade/user_data/logs
+    working_dir: /workspace
+    environment:
+      FREQTRADE__EXCHANGE__KEY: ${SPOT_API_KEY}
+      FREQTRADE__EXCHANGE__SECRET: ${SPOT_API_SECRET}
+      FREQTRADE__TELEGRAM__ENABLED: ${TELEGRAM_ENABLED}
+      FREQTRADE__TELEGRAM__TOKEN: ${TELEGRAM_TOKEN}
+      FREQTRADE__TELEGRAM__CHAT_ID: ${TELEGRAM_CHAT_ID}
+      FREQTRADE__API_SERVER__USERNAME: ${SPOT_API_USERNAME}
+      FREQTRADE__API_SERVER__PASSWORD: ${SPOT_API_PASSWORD}
+      FREQTRADE__API_SERVER__JWT_SECRET_KEY: ${SPOT_JWT_SECRET}
+    command: >
+      trade
+      --config /workspace/config/runtime/spot.paper.dynamic.json
+      --strategy-path /workspace/strategies/production
+      --db-url sqlite:////workspace/data/tradesv3_spot.sqlite
+      --strategy AdaptiveMetaStrategy

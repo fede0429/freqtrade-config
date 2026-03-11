@@ -168,7 +168,7 @@ class UniversalMACD_V2(IStrategy):
         dataframe['ema50'] = ta.EMA(dataframe, timeperiod=50)
 
         # -------- 布林带（辅助参考）--------
-        bb = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2, nbdevdn=2)
+        bb = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
         dataframe['bb_upper'] = bb['upperband']
         dataframe['bb_lower'] = bb['lowerband']
         dataframe['bb_mid'] = bb['middleband']
@@ -353,3 +353,4 @@ def stoploss_from_open(
         return -1 + (1 - open_relative_stop) / (1 - current_profit)
     else:
         return -1 + (1 + open_relative_stop) / (1 + current_profit)
+

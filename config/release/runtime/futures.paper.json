@@ -26,12 +26,13 @@
   },
   "paths": {
     "strategy_manifest": "strategies/registry/deployment_manifest.json",
-    "scanner_report": "reports/scanner/latest_scan.json",
-    "daily_report": "reports/operations/daily/studio_daily_report_2026-03-08.json",
+    "scanner_report": "reports/scanner/latest_scan_futures_paper.json",
+    "daily_report": "reports/operations/daily/studio_daily_report_futures_paper_latest.json",
     "risk_profile": "config/risk/runtime/futures.paper.json",
     "reporting_profile": "config/reporting/runtime/futures.paper.json",
     "trading_config": "config/runtime/futures.paper.dynamic.json",
-    "docker_compose": "docker/docker-compose.step6.yml"
+    "docker_compose": "docker/docker-compose.futures.paper.live.yml",
+    "compose_env_file": "config/secrets/.env"
   },
   "market_type": "futures",
   "deployment_target": "trader_futures",

@@ -1,40 +1,43 @@
 {
-  "schema_version": 1,
-  "release_name": "studio_release",
-  "timezone": "Europe/Rome",
-  "release": {
-    "require_clean_render": true,
-    "require_strategy_manifest": true,
-    "require_scanner_report": true,
-    "require_daily_report": true,
-    "require_risk_profile": true,
-    "require_reporting_profile": true,
-    "allow_prod_without_canary": false,
-    "release_artifact_dir": "release/runtime",
-    "preflight_output_dir": "reports/deploy",
-    "default_operator": "studio-owner"
-  },
-  "checks": {
-    "max_prod_drawdown_ratio": 0.1,
-    "max_daily_loss_ratio": 0.03,
-    "min_scanner_selected_pairs": 2,
-    "required_guard_status": "healthy",
-    "forbid_candidate_in_prod": true,
-    "forbid_dry_run_in_prod": true,
-    "require_prod_approved_strategies": true,
-    "required_files": []
-  },
-  "paths": {
-    "strategy_manifest": "strategies/registry/deployment_manifest.json",
-    "scanner_report": "reports/scanner/latest_scan.json",
-    "daily_report": "reports/operations/daily/studio_daily_report_2026-03-08.json",
-    "risk_profile": "config/risk/runtime/spot.prod.json",
-    "reporting_profile": "config/reporting/runtime/spot.prod.json",
-    "trading_config": "config/runtime/spot.prod.static.json",
-    "docker_compose": "docker/docker-compose.step6.yml"
-  },
-  "market_type": "spot",
-  "deployment_target": "trader_spot",
-  "profile_name": "prod",
-  "release_channel": "prod"
+    "schema_version":  1,
+    "release_name":  "studio_release",
+    "timezone":  "Europe/Rome",
+    "release":  {
+                    "require_clean_render":  true,
+                    "require_strategy_manifest":  true,
+                    "require_scanner_report":  true,
+                    "require_daily_report":  true,
+                    "require_risk_profile":  true,
+                    "require_reporting_profile":  true,
+                    "allow_prod_without_canary":  false,
+                    "release_artifact_dir":  "release/runtime",
+                    "preflight_output_dir":  "reports/deploy",
+                    "default_operator":  "studio-owner"
+                },
+    "checks":  {
+                   "max_prod_drawdown_ratio":  0.1,
+                   "max_daily_loss_ratio":  0.03,
+                   "min_scanner_selected_pairs":  2,
+                   "required_guard_status":  "healthy",
+                   "forbid_candidate_in_prod":  true,
+                   "forbid_dry_run_in_prod":  true,
+                   "require_prod_approved_strategies":  true,
+                   "required_files":  [
+
+                                      ]
+               },
+    "paths":  {
+                  "strategy_manifest":  "strategies/registry/deployment_manifest.json",
+                  "scanner_report":  "reports/scanner/latest_scan.json",
+                  "daily_report":  "reports/operations/daily/studio_daily_report_spot_prod_latest.json",
+                  "risk_profile":  "config/risk/runtime/spot.prod.json",
+                  "reporting_profile":  "config/reporting/runtime/spot.prod.json",
+                  "trading_config":  "config/runtime/spot.prod.static.json",
+                  "docker_compose":  "docker/docker-compose.step6.yml",
+                  "compose_env_file":  "config/secrets/.env"
+              },
+    "market_type":  "spot",
+    "deployment_target":  "trader_spot",
+    "profile_name":  "prod",
+    "release_channel":  "prod"
 }

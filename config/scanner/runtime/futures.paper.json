@@ -1,48 +1,49 @@
 {
   "selection": {
-    "top_n": 25,
-    "min_score": 62,
-    "watchlist_min_score": 40,
+    "top_n": 16,
+    "min_score": 64,
+    "watchlist_min_score": 42,
     "hard_block_flags": [
       "high_volatility",
       "low_liquidity"
     ]
   },
   "pair_filters": {
-    "min_liquidity_usd": 5000000,
-    "min_volume_ratio": 1.15,
-    "min_momentum_24h_pct": 0.5,
-    "min_momentum_1h_pct": 0.2,
-    "max_drawdown_entry_pct": -6.0,
-    "target_volatility_pct": 4.5,
-    "max_volatility_pct": 7.5
+    "min_liquidity_usd": 8000000,
+    "min_volume_ratio": 1.12,
+    "min_momentum_24h_pct": 0.35,
+    "min_momentum_1h_pct": 0.1,
+    "max_drawdown_entry_pct": -5.0,
+    "target_volatility_pct": 4.0,
+    "max_volatility_pct": 6.5
   },
   "market_regime": {
-    "trend_breadth_threshold": 0.62,
-    "risk_off_breadth_threshold": 0.38,
-    "max_volatility_pct": 8.0
+    "trend_breadth_threshold": 0.65,
+    "risk_off_breadth_threshold": 0.4,
+    "max_volatility_pct": 7.0
   },
   "output": {
     "write_json": true,
     "write_report": true,
-    "report_path": "reports/scanner/latest_scan.json"
+    "report_path": "reports/scanner/latest_scan_futures_paper.json"
   },
   "source": {
-    "default_mode": "fixture",
+    "default_mode": "live",
     "timeframe": "1h",
     "lookback_candles": 72,
     "trading_config": "config/runtime/futures.paper.dynamic.json",
-    "fixture_path": "data/fixtures/scanner/binance_futures_ohlcv_sample.json",
     "universe": {
       "quote_asset": "USDT",
-      "max_pairs": 12,
+      "max_pairs": 8,
       "pairs": [
-        "BTC/USDT",
-        "ETH/USDT",
-        "SOL/USDT",
-        "XRP/USDT",
-        "DOGE/USDT",
-        "AVAX/USDT"
+        "BTC/USDT:USDT",
+        "ETH/USDT:USDT",
+        "BNB/USDT:USDT",
+        "SOL/USDT:USDT",
+        "XRP/USDT:USDT",
+        "DOGE/USDT:USDT",
+        "ADA/USDT:USDT",
+        "AVAX/USDT:USDT"
       ]
     }
   },

@@ -119,6 +119,7 @@ class AdaptiveMetaStrategy(IStrategy):
 
     # ==================== DCA 设置（加仓）====================
     # 最大安全订单数（DCA 加仓次数）
+    position_adjustment_enable = True
     max_entry_position_adjustment = 2  # 最多加仓 2 次
 
     # ==================== Hyperopt 参数：市场状态 ====================
@@ -242,7 +243,7 @@ class AdaptiveMetaStrategy(IStrategy):
         dataframe['trend_up'] = dataframe['plus_di'] > dataframe['minus_di']
 
         # -------- 布林带 --------
-        bb_20 = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2, nbdevdn=2)
+        bb_20 = ta.BBANDS(dataframe, timeperiod=20, nbdevup=2.0, nbdevdn=2.0)
         dataframe['bb_upper'] = bb_20['upperband']
         dataframe['bb_lower'] = bb_20['lowerband']
         dataframe['bb_mid'] = bb_20['middleband']
@@ -665,3 +666,5 @@ class AdaptiveMetaStrategy(IStrategy):
             index=df.index
         )
         return result
+
+

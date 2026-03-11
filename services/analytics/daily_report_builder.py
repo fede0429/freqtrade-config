@@ -343,8 +343,16 @@ def write_outputs(report: OperationsReport, output_dir: str | Path) -> tuple[Pat
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     date = report.summary.date
+    rendered_json = json.dumps(report.to_dict(), indent=2, ensure_ascii=False)
+    rendered_md = render_markdown(report)
+
     json_path = out / f'studio_daily_report_{date}.json'
     md_path = out / f'studio_daily_report_{date}.md'
-    json_path.write_text(json.dumps(report.to_dict(), indent=2, ensure_ascii=False), encoding='utf-8')
-    md_path.write_text(render_markdown(report), encoding='utf-8')
+    latest_json_path = out / f'studio_daily_report_{report.summary.market_type}_{report.summary.profile_name}_latest.json'
+    latest_md_path = out / f'studio_daily_report_{report.summary.market_type}_{report.summary.profile_name}_latest.md'
+
+    json_path.write_text(rendered_json, encoding='utf-8')
+    md_path.write_text(rendered_md, encoding='utf-8')
+    latest_json_path.write_text(rendered_json, encoding='utf-8')
+    latest_md_path.write_text(rendered_md, encoding='utf-8')
     return json_path, md_path

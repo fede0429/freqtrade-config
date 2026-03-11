@@ -75,11 +75,11 @@
     "CORS_origins": [
       "http://localhost:3000"
     ],
-    "username": "paper_admin",
+    "username": "futures_admin",
     "password": "OVERRIDDEN_BY_ENV"
   },
   "telegram": {
-    "enabled": true,
+    "enabled": false,
     "token": "OVERRIDDEN_BY_ENV",
     "chat_id": "OVERRIDDEN_BY_ENV",
     "allow_custom_messages": true,
@@ -114,27 +114,27 @@
   },
   "trading_mode": "futures",
   "margin_mode": "isolated",
-  "max_open_trades": 3,
-  "tradable_balance_ratio": 0.5,
-  "available_capital": -1,
+  "liquidation_buffer": 0.08,
+  "max_open_trades": 2,
+  "tradable_balance_ratio": 0.35,
   "amend_last_stake_amount": true,
   "last_stake_amount_min_ratio": 0.5,
   "pair_selection_mode": "dynamic",
   "pairlists": [
     {
       "method": "VolumePairList",
-      "number_assets": 15,
+      "number_assets": 10,
       "sort_key": "quoteVolume",
       "min_value": 0,
       "refresh_period": 1800
     },
     {
       "method": "AgeFilter",
-      "min_days_listed": 60
+      "min_days_listed": 90
     },
     {
       "method": "SpreadFilter",
-      "max_spread_ratio": 0.005
+      "max_spread_ratio": 0.0035
     },
     {
       "method": "ShuffleFilter",
@@ -142,37 +142,10 @@
     }
   ],
   "leverage_config": {
-    "default": 3,
-    "BTC/USDT:USDT": 3,
-    "ETH/USDT:USDT": 3
+    "default": 2,
+    "BTC/USDT:USDT": 2,
+    "ETH/USDT:USDT": 2
   },
-  "protections": [
-    {
-      "method": "StoplossGuard",
-      "lookback_period_candles": 12,
-      "trade_limit": 2,
-      "stop_duration_candles": 8,
-      "only_per_pair": false
-    },
-    {
-      "method": "MaxDrawdown",
-      "lookback_period_candles": 24,
-      "trade_limit": 3,
-      "stop_duration_candles": 24,
-      "max_allowed_drawdown": 0.1
-    },
-    {
-      "method": "CooldownPeriod",
-      "stop_duration_candles": 4
-    },
-    {
-      "method": "LowProfitPairs",
-      "lookback_period_candles": 48,
-      "trade_limit": 1,
-      "stop_duration_candles": 48,
-      "required_profit": 0.0
-    }
-  ],
   "logfile": "/freqtrade/user_data/logs/freqtrade_futures.log",
   "environment_name": "paper",
   "dry_run": true,
