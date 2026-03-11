@@ -4,14 +4,15 @@
   "pairs": {
     "BTC/USDT": {
       "agent_enabled": true,
-      "confidence": 0.78,
-      "stake_multiplier": 1.35,
+      "confidence": 0.81,
+      "stake_multiplier": 1.4,
       "entry_allowed": true,
       "exit_signal": false,
       "exit_reason": null,
       "stoploss_mode": "tighten_only",
-      "agent_stoploss": -0.04,
-      "target_rr": 2.8,
+      "agent_stoploss": -0.035,
+      "target_rr": 3.0,
+      "target_profit_ratio": null,
       "governance_gate": "passed"
     }
   }

@@ -1,4 +1,6 @@
 {
+  "ts": "2026-03-11T12:00:00Z",
+  "source": "agent_service_v24",
   "signals": [
     {
       "pair": "BTC/USDT",
@@ -11,6 +13,7 @@
       "stoploss_mode": "tighten_only",
       "agent_stoploss": -0.035,
       "target_rr": 3.0,
+      "target_profit_ratio": null,
       "governance_gate": "passed"
     }
   ]

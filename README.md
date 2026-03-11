@@ -1,10 +1,16 @@
-# Freqtrade Agent Bridge v2
+# Freqtrade Agent Bridge
 
-这是接在 `feature/agent-integration-v1` 之后的第二版。
+This branch wires an external agent sidecar into a Freqtrade strategy with a staged, low-risk rollout.
 
-本版重点：
-- 改成“继承你真实主策略”的模板
-- 增加 shadow audit / 对账结构
-- 增加 live stake only 开关
-- 继续保持低风险：默认仍可 shadow 运行
-- 为后续 v3 的 exit / stoploss 放开做准备
+Current guardrails:
+- Default mode is shadow mode.
+- Agent callbacks only go live when the overlay enables them.
+- Decision cache freshness is enforced in live and dry-run.
+- Backtests can bypass cache TTL unless `enforce_cache_ttl_in_backtest` is turned on.
+- The hybrid launcher keeps refreshing the decision cache while Freqtrade is running.
+
+Important runtime entrypoints:
+- `scripts/run_agent_service.sh`
+- `scripts/run_hybrid_stack.sh`
+- `user_data/strategies/AgentBridgeStrategy.py`
+- `user_data/config/agent_overlay.json`

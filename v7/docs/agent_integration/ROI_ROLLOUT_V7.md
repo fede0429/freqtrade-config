@@ -1,11 +1,13 @@
 # ROI ROLLOUT V7
 
-新增日志：
+New traces:
 - `roi_shadow_trace.jsonl`
 - `roi_skip_trace.jsonl`
 - `roi_apply_trace.jsonl`
 
-重点检查：
-- trade_duration 不足时是否跳过
-- 缺失 target_rr 是否跳过
-- roi_apply 是否只在 live 打开后生效
+Checks:
+- `use_custom_roi` must be enabled in the strategy.
+- `trade_duration` must pass the configured minimum.
+- `target_profit_ratio` can be used directly.
+- `target_rr` must be converted with a stop reference before it becomes a Freqtrade ROI value.
+- ROI should apply only after the callback is enabled outside shadow mode.

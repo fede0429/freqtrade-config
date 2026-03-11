@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 from datetime import datetime, timezone
 
-AUDIT_DIR = Path("user_data/agent_runtime/audit")
-OUT_DIR = Path("agent_service/reports")
-
+ROOT = Path(__file__).resolve().parents[4]
+AUDIT_DIR = ROOT / "user_data/agent_runtime/audit"
+OUT_DIR = ROOT / "v8/agent_service/reports"
 TRACE_FILES = [
     "stake_decision_trace.jsonl",
     "stake_apply_trace.jsonl",
@@ -19,12 +19,13 @@ TRACE_FILES = [
     "roi_apply_trace.jsonl",
 ]
 
+
 def load_jsonl(path: Path):
     if not path.exists():
         return []
     rows = []
-    with path.open("r", encoding="utf-8") as f:
-        for line in f:
+    with path.open("r", encoding="utf-8") as handle:
+        for line in handle:
             line = line.strip()
             if not line:
                 continue
@@ -33,6 +34,7 @@ def load_jsonl(path: Path):
             except Exception:
                 continue
     return rows
+
 
 def main():
     summary = {}
@@ -53,6 +55,7 @@ def main():
     out = OUT_DIR / "replay_compare_pack.json"
     out.write_text(json.dumps(pack, indent=2, ensure_ascii=False), encoding="utf-8")
     print(out)
+
 
 if __name__ == "__main__":
     main()

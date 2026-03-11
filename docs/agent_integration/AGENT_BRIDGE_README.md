@@ -1,23 +1,21 @@
-# Freqtrade Agent Bridge v1
+# Agent Bridge README
 
-这是一版“先分支、后整合”的接入骨架，目标是把已经开发到 v24 的 agent sidecar
-以最小风险方式接入现有 Freqtrade 仓库，而不是直接改爆主运行策略。
+This integration keeps the base Freqtrade strategy in control and lets the agent layer add gated adjustments.
 
-## 本版内容
-- AgentBridgeStrategy.py 骨架
-- decision_cache.json 协议
-- agent_overlay.json 配置
-- hybrid stack 启动脚本
-- sidecar 决策缓存构建器
-- shadow 模式日志输出
+## Runtime model
+- `AgentBridgeStrategy` inherits the base trading strategy.
+- The agent writes signals to `agent_service/reports/latest_agent_signals.json`.
+- `scripts/run_agent_service.sh` converts that payload into `user_data/agent_runtime/state/decision_cache.json`.
+- `scripts/run_hybrid_stack.sh` refreshes the cache continuously and then launches Freqtrade.
 
-## 建议分支
-feature/agent-integration-v1
+## Callback behavior
+- Stake: can scale the proposed stake after confidence and governance checks.
+- Exit: can add an exit reason, but falls back to the base strategy when no agent action is applied.
+- Stoploss: can only tighten risk and never removes the base strategy stoploss behavior.
+- ROI: is enabled explicitly and derives a profit ratio from either `target_profit_ratio` or `target_rr * abs(agent_stoploss)`.
+- Entry confirm: can block entries only after confidence, governance, pair allowlist, and freshness checks pass.
 
-## 建议先提交到分支的目录
-- user_data/strategies/AgentBridgeStrategy.py
-- user_data/agent_runtime/
-- user_data/config/agent_overlay.json
-- scripts/run_agent_service.sh
-- scripts/run_hybrid_stack.sh
-- agent_service/apps/build_decision_cache/
+## Launch example
+```bash
+scripts/run_hybrid_stack.sh freqtrade trade --config user_data/config.json --strategy AgentBridgeStrategy
+```
