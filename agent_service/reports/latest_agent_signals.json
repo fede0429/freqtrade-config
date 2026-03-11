@@ -1,0 +1,17 @@
+{
+  "signals": [
+    {
+      "pair": "BTC/USDT",
+      "agent_enabled": true,
+      "confidence": 0.81,
+      "stake_multiplier": 1.4,
+      "entry_allowed": true,
+      "exit_signal": false,
+      "exit_reason": null,
+      "stoploss_mode": "tighten_only",
+      "agent_stoploss": -0.035,
+      "target_rr": 3.0,
+      "governance_gate": "passed"
+    }
+  ]
+}
