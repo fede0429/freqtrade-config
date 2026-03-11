@@ -21,7 +21,3 @@ class BridgeLoader:
 
     def load_decision_cache(self) -> dict[str, Any]:
         return self._safe_read_json(self.decision_cache_path)
-
-    def pair_decision(self, pair: str) -> dict[str, Any]:
-        cache = self.load_decision_cache()
-        return cache.get("pairs", {}).get(pair.upper(), {})

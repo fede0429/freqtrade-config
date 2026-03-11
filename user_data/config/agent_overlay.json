@@ -1,19 +1,22 @@
 {
   "shadow_mode": true,
   "cache_ttl_seconds": 90,
-  "min_confidence_for_live": 0.7,
+  "min_confidence_for_live": 0.72,
+  "entry_min_confidence": 0.75,
   "max_stake_multiplier": 1.5,
   "fallback_mode": "base_strategy_only",
+  "exit_min_profit_threshold": -0.01,
+  "roi_min_trade_duration": 5,
   "enabled_callbacks": {
     "stake": true,
-    "exit": false,
-    "stoploss": false,
-    "roi": false,
-    "entry_confirm": false
+    "exit": true,
+    "stoploss": true,
+    "roi": true,
+    "entry_confirm": true
   },
   "enabled_pairs": [
     "BTC/USDT",
     "ETH/USDT"
   ],
-  "rollout_stage": "v2_stake_only"
+  "rollout_stage": "alignment_v1_all_callbacks_shadow"
 }
