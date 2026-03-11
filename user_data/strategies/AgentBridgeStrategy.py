@@ -18,7 +18,7 @@ class AgentBridgeStrategy(BaseStrategy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loader = BridgeLoader(self.agent_overlay_path, self.decision_cache_path)
-        self.audit = ShadowAuditWriter()
+        self.audit: ShadowAuditWriter | None = None
         self._overlay: dict[str, Any] = {}
         self._cache: dict[str, Any] = {}
         self._refresh()
@@ -124,6 +124,11 @@ class AgentBridgeStrategy(BaseStrategy):
             return [self._serialize_value(item) for item in value]
         return value
 
+    def _audit_writer(self) -> ShadowAuditWriter:
+        if self.audit is None:
+            self.audit = ShadowAuditWriter()
+        return self.audit
+
     def _trace(self, filename: str, payload: dict[str, Any], event_time: datetime | None = None) -> None:
         if not self._should_write_trace():
             return
@@ -131,7 +136,7 @@ class AgentBridgeStrategy(BaseStrategy):
         if event_time is not None:
             normalized = self._normalize_time(event_time)
             row["event_time"] = normalized.isoformat() if normalized else str(event_time)
-        self.audit.append_event(filename, row)
+        self._audit_writer().append_event(filename, row)
 
     def _call_parent(self, method_name: str, *args, **kwargs):
         parent = getattr(super(), method_name, None)

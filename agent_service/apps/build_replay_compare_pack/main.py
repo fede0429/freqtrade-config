@@ -48,10 +48,25 @@ def resolve_run_id() -> str:
     return ""
 
 
+def available_run_ids() -> list[str]:
+    if not AUDIT_ROOT.exists():
+        return []
+    return sorted(path.name for path in AUDIT_ROOT.iterdir() if path.is_dir())
+
+
 def resolve_audit_dir(run_id: str) -> Path:
-    if run_id:
-        return AUDIT_ROOT / run_id
-    return AUDIT_ROOT
+    return AUDIT_ROOT / run_id
+
+
+def require_run_context(run_id: str, audit_dir: Path) -> None:
+    if not run_id:
+        known_runs = available_run_ids()
+        hint = ", ".join(known_runs[-5:]) if known_runs else "none"
+        raise SystemExit(
+            f"No active AGENT_RUN_ID found. Set AGENT_RUN_ID or write {CURRENT_RUN_ID_FILE}. Available audit runs: {hint}"
+        )
+    if not audit_dir.exists():
+        raise SystemExit(f"Audit directory for run_id '{run_id}' not found: {audit_dir}")
 
 
 def load_jsonl(path: Path):
@@ -73,27 +88,27 @@ def load_jsonl(path: Path):
 def main():
     run_id = resolve_run_id()
     audit_dir = resolve_audit_dir(run_id)
+    require_run_context(run_id, audit_dir)
+
     summary = {}
     for name in TRACE_FILES:
         rows = load_jsonl(audit_dir / name)
         summary[name] = {"count": len(rows), "sample": rows[-5:] if rows else []}
+
     pack = {
         "ts": datetime.now(timezone.utc).isoformat(),
         "kind": "replay_compare_pack",
-        "run_id": run_id or None,
-        "audit_dir": str(audit_dir.relative_to(ROOT)) if audit_dir.exists() else str(audit_dir),
+        "run_id": run_id,
+        "audit_dir": str(audit_dir.relative_to(ROOT)),
         "summary": summary,
     }
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(pack, indent=2, ensure_ascii=False)
     latest_out = OUT_DIR / "replay_compare_pack.json"
     latest_out.write_text(payload, encoding="utf-8")
-    if run_id:
-        scoped_out = OUT_DIR / f"replay_compare_pack_{run_id}.json"
-        scoped_out.write_text(payload, encoding="utf-8")
-        print(scoped_out)
-        return
-    print(latest_out)
+    scoped_out = OUT_DIR / f"replay_compare_pack_{run_id}.json"
+    scoped_out.write_text(payload, encoding="utf-8")
+    print(scoped_out)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ This integration keeps the base Freqtrade strategy in control and lets the agent
 - Entry confirm: can block entries only after the parent strategy, confidence, governance, pair allowlist, and freshness checks pass.
 
 ## Replay / audit behavior
-- `scripts/build_replay_compare_pack.sh` reads only the current run id trace directory.
+- `scripts/build_replay_compare_pack.sh` reads only the current run id trace directory and exits with an error if no active run id or audit directory is available.
 - Backtests and hyperopt do not emit trace files by default unless `write_traces_in_backtest` is enabled in the overlay.
 - The checked-in sample signal uses `cache_ts_mode=build` so the launcher can rebuild a fresh cache from the example payload.
 
