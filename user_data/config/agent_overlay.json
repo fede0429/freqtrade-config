@@ -5,7 +5,7 @@
   "max_stake_multiplier": 1.5,
   "fallback_mode": "base_strategy_only",
   "enabled_callbacks": {
-    "stake": false,
+    "stake": true,
     "exit": false,
     "stoploss": false,
     "roi": false,
@@ -14,5 +14,6 @@
   "enabled_pairs": [
     "BTC/USDT",
     "ETH/USDT"
-  ]
+  ],
+  "rollout_stage": "v2_stake_only"
 }
