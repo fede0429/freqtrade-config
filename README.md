@@ -1,24 +1,15 @@
-# Decision Aggregator Integration v1
+# Provider Rollout / Pair-level Provider Enablement v1
 
-本包把 `decision_aggregator.py` 正式接入到 `decision_cache` 生成链。
+这是下一阶段的**增量包**，目标是把 provider/aggregator 从“全局统一启用”
+推进到“按 pair、按 provider 灰度启用”。
 
 ## 本版目标
-- 用统一 Provider 输出生成 `decision_cache.json`
-- 给桥接层提供稳定的 schema v2 输入
-- 保留对旧版扁平字段的桥接兼容
-- 为后续接入更多 Providers 打好入口
+- 支持 pair-level provider enablement
+- 支持 provider rollout stage
+- 支持 pair-specific required providers
+- 支持 provider disable / override
+- 支持生成 pair/provider rollout report
 
-## 新增内容
-- `build_decision_cache_v2.py`
-- `provider_registry.py`
-- `provider_health_report.py`
-- `sample_provider_run.py`
-- 文档与提交建议
-
-## 推荐集成位置
-agent_service/
-  aggregator/
-  providers/
-  reports/
-user_data/
-  agent_runtime/state/
+## 这是增量包
+请把它叠加到你当前已经整合好的分支代码上。
+这不是收口总包。
