@@ -10,6 +10,9 @@ from agent_service.aggregator.observability_report import write_observability_re
 from agent_service.aggregator.decision_history_writer import append_decision_history
 from agent_service.aggregator.approval_summary_report import write_approval_summary_report
 from agent_service.aggregator.rollout_state_report import write_rollout_state_report
+from agent_service.aggregator.final_readiness_checklist import FinalReadinessChecklist
+from agent_service.aggregator.operator_handoff_pack import build_operator_handoff_pack
+from agent_service.aggregator.review_summary_report import write_review_summary_report
 from agent_service.providers.provider_base import ProviderSnapshot, SkillProvider
 from agent_service.providers.provider_registry import build_default_provider_registry, build_pair_provider_map
 
@@ -21,6 +24,7 @@ ANOMALY_POLICY_PATH = "user_data/config/anomaly_policy.json"
 COOLDOWN_POLICY_PATH = "user_data/config/cooldown_policy.json"
 GOVERNANCE_POLICY_PATH = "user_data/config/governance_policy.json"
 ROLLOUT_STATE_POLICY_PATH = "user_data/config/rollout_state_policy.json"
+READINESS_POLICY_PATH = "user_data/config/readiness_policy.json"
 
 
 def load_json(path: str, default: dict) -> dict:
@@ -41,91 +45,37 @@ def load_rollout_config(path: str = ROLLOUT_CONFIG_PATH) -> dict:
 
 
 def load_confidence_policy(path: str = CONFIDENCE_POLICY_PATH) -> dict:
-    return load_json(path, {
-        "global_defaults": {
-            "entry_min_confidence": 0.75,
-            "max_risk_score": 0.40,
-            "neutralize_degraded_provider_score": True,
-            "base_live_stake_multiplier": 1.15,
-            "trend_high_conf_stake_multiplier": 1.35,
-            "base_target_rr": 1.8,
-            "trend_target_rr": 2.8,
-            "base_agent_stoploss": -0.045,
-            "high_conf_agent_stoploss": -0.035,
-            "stake_cap_ratio": 0.12,
-            "roi_min_trade_duration": 5
-        },
-        "provider_weights": {"tradingview_mcp": 1.0, "dexpaprika": 1.0},
-        "pair_overrides": {}
-    })
+    return load_json(path, {"global_defaults": {}, "provider_weights": {}, "pair_overrides": {}})
 
 
 def load_execution_policy(path: str = EXECUTION_POLICY_PATH) -> dict:
-    return load_json(path, {
-        "global_defaults": {
-            "min_provider_count": 1,
-            "fallback_mode": "base_strategy_only",
-            "allow_entry_confirm": True,
-            "allow_stake": True,
-            "allow_exit": True,
-            "allow_stoploss": True,
-            "allow_roi": True
-        },
-        "pair_overrides": {}
-    })
+    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
 
 
 def load_anomaly_policy(path: str = ANOMALY_POLICY_PATH) -> dict:
-    return load_json(path, {
-        "global_defaults": {
-            "max_provider_latency_ms": 1200,
-            "max_score_drift": 0.45,
-            "block_on_high_latency": False,
-            "block_on_high_drift": True,
-            "block_on_risk_flags": ["high_slippage_risk"]
-        },
-        "pair_overrides": {}
-    })
+    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
 
 
 def load_cooldown_policy(path: str = COOLDOWN_POLICY_PATH) -> dict:
-    return load_json(path, {
-        "global_defaults": {
-            "cooldown_minutes_on_blocking_anomaly": 45,
-            "cooldown_minutes_on_provider_gate_fail": 20,
-            "cooldown_entry_block": True,
-            "cooldown_stake_multiplier_cap": 1.0
-        },
-        "pair_overrides": {}
-    })
+    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
 
 
 def load_governance_policy(path: str = GOVERNANCE_POLICY_PATH) -> dict:
-    return load_json(path, {
-        "global_defaults": {
-            "require_provider_gate_passed": True,
-            "require_no_blocking_anomaly": True,
-            "require_no_active_cooldown": False,
-            "default_trading_mode": "shadow_only"
-        },
-        "pair_overrides": {}
-    })
+    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
 
 
 def load_rollout_state_policy(path: str = ROLLOUT_STATE_POLICY_PATH) -> dict:
+    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
+
+
+def load_readiness_policy(path: str = READINESS_POLICY_PATH) -> dict:
     return load_json(path, {
         "global_defaults": {
-            "mode_to_state": {
-                "shadow_only": "shadow",
-                "technical_shadow": "shadow",
-                "candidate_shadow": "candidate",
-                "paper_candidate": "paper",
-                "paper_ready": "paper",
-                "limited_live_candidate": "limited_live"
-            },
-            "promote_when_governance_approved": True,
-            "freeze_on_active_cooldown": True,
-            "freeze_on_blocking_anomaly": True
+            "min_readiness_score": 3,
+            "require_governance_approved": True,
+            "require_rollout_not_frozen": True,
+            "require_provider_gate_passed": True,
+            "require_no_blocking_anomaly": True
         },
         "pair_overrides": {}
     })
@@ -159,6 +109,7 @@ def main():
     cooldown_policy = load_cooldown_policy()
     governance_policy = load_governance_policy()
     rollout_state_policy = load_rollout_state_policy()
+    readiness_policy = load_readiness_policy()
 
     providers = build_default_provider_registry()
     write_provider_health_report(providers)
@@ -168,6 +119,7 @@ def main():
     write_json_report({"cooldown_policy": cooldown_policy}, "agent_service/reports/cooldown_policy_report.json")
     write_json_report({"governance_policy": governance_policy}, "agent_service/reports/governance_policy_report.json")
     write_json_report({"rollout_state_policy": rollout_state_policy}, "agent_service/reports/rollout_state_policy_report.json")
+    write_json_report({"readiness_policy": readiness_policy}, "agent_service/reports/readiness_policy_report.json")
 
     pairs = rollout_config.get("enabled_pairs", DEFAULT_PAIRS)
     pair_provider_map = build_pair_provider_map(pairs, rollout_config=rollout_config)
@@ -186,7 +138,8 @@ def main():
     )
     payload = aggregator.build_decision_cache(pair_snapshots)
     append_decision_history(payload)
-    write_approval_summary_report({
+
+    approval_summary = {
         "pairs": {
             pair: {
                 "governance_gate": meta.get("governance_gate"),
@@ -197,8 +150,10 @@ def main():
             }
             for pair, meta in payload.get("pairs", {}).items()
         }
-    })
-    write_rollout_state_report({
+    }
+    write_approval_summary_report(approval_summary)
+
+    rollout_summary = {
         "pairs": {
             pair: {
                 "rollout_state": meta.get("rollout_state"),
@@ -207,7 +162,24 @@ def main():
             }
             for pair, meta in payload.get("pairs", {}).items()
         }
-    })
+    }
+    write_rollout_state_report(rollout_summary)
+
+    checklist = FinalReadinessChecklist(readiness_policy)
+    review_summary = {"pairs": {}}
+    for pair, meta in payload.get("pairs", {}).items():
+        review_summary["pairs"][pair] = checklist.evaluate(
+            pair=pair,
+            governance_gatekeeper=meta.get("governance_gatekeeper", {}),
+            rollout_state_machine=meta.get("rollout_state_machine", {}),
+            execution_policy=meta.get("execution_policy", {}),
+            anomaly_guard=meta.get("anomaly_guard", {}),
+        )
+    write_review_summary_report(review_summary)
+
+    handoff_pack = build_operator_handoff_pack(payload)
+    write_json_report(handoff_pack, "agent_service/reports/operator_handoff_pack.json")
+
     out = Path("user_data/agent_runtime/state/decision_cache.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
