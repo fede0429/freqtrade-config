@@ -1,0 +1,74 @@
+{
+  "schema_version": "2.0",
+  "ts": "2026-03-11T12:00:00Z",
+  "source": "decision_aggregator",
+  "env": "dry-run",
+  "global": {
+    "shadow_mode": true,
+    "governance_gate": "passed",
+    "cache_ttl_seconds": 90,
+    "aggregator_health": "ok",
+    "fallback_mode": "base_strategy_only"
+  },
+  "pairs": {
+    "BTC/USDT": {
+      "agent_enabled": true,
+      "pair_enabled": true,
+      "governance_gate": "passed",
+      "market_regime": "trend",
+      "confidence": 0.81,
+      "risk_score": 0.28,
+      "providers": {
+        "technical_skill": {
+          "status": "ok",
+          "score": 0.76,
+          "ts": "2026-03-11T11:59:40Z",
+          "stale": false
+        },
+        "dex_liquidity_skill": {
+          "status": "ok",
+          "score": 0.68,
+          "ts": "2026-03-11T11:59:42Z",
+          "stale": false
+        }
+      },
+      "entry": {
+        "entry_allowed": true,
+        "entry_reason": "multi_skill_alignment",
+        "entry_min_confidence": 0.75
+      },
+      "stake": {
+        "stake_multiplier": 1.35,
+        "stake_cap_ratio": 0.12,
+        "stake_reason": "high_confidence_trend"
+      },
+      "exit": {
+        "exit_signal": false,
+        "exit_reason": null,
+        "force_exit_on_loss": false
+      },
+      "stoploss": {
+        "stoploss_mode": "tighten_only",
+        "agent_stoploss": -0.035
+      },
+      "roi": {
+        "target_rr": 2.8,
+        "roi_min_trade_duration": 5
+      },
+      "trace": {
+        "decision_id": "dec_btc_20260311_120000",
+        "evidence_refs": [
+          "technical_skill:btc:1h",
+          "dex_liquidity_skill:btc:pools"
+        ]
+      },
+      "entry_allowed": true,
+      "stake_multiplier": 1.35,
+      "exit_signal": false,
+      "exit_reason": null,
+      "stoploss_mode": "tighten_only",
+      "agent_stoploss": -0.035,
+      "target_rr": 2.8
+    }
+  }
+}
