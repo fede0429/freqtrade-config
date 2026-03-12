@@ -1,0 +1,36 @@
+{
+  "global_defaults": {
+    "entry_min_confidence": 0.75,
+    "max_risk_score": 0.40,
+    "neutralize_degraded_provider_score": true,
+    "base_live_stake_multiplier": 1.15,
+    "trend_high_conf_stake_multiplier": 1.35,
+    "base_target_rr": 1.8,
+    "trend_target_rr": 2.8,
+    "base_agent_stoploss": -0.045,
+    "high_conf_agent_stoploss": -0.035,
+    "stake_cap_ratio": 0.12,
+    "roi_min_trade_duration": 5
+  },
+  "provider_weights": {
+    "tradingview_mcp": 1.0,
+    "dexpaprika": 0.85
+  },
+  "pair_overrides": {
+    "BTC/USDT": {
+      "entry_min_confidence": 0.78,
+      "trend_high_conf_stake_multiplier": 1.40,
+      "trend_target_rr": 3.0
+    },
+    "ETH/USDT": {
+      "entry_min_confidence": 0.74,
+      "max_risk_score": 0.35,
+      "risk_bias": 0.05
+    },
+    "SOL/USDT": {
+      "entry_min_confidence": 0.82,
+      "base_live_stake_multiplier": 1.05,
+      "stake_cap_ratio": 0.08
+    }
+  }
+}

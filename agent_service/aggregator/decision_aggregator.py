@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
 from agent_service.providers.provider_base import ProviderSnapshot
+from agent_service.aggregator.confidence_policy import ConfidencePolicy
 
 
 def utc_now_iso() -> str:
@@ -13,19 +14,44 @@ def utc_now_iso() -> str:
 
 
 class DecisionAggregator:
-    def __init__(self, cache_ttl_seconds: int = 90, shadow_mode: bool = True) -> None:
+    def __init__(
+        self,
+        cache_ttl_seconds: int = 90,
+        shadow_mode: bool = True,
+        confidence_policy: dict | None = None,
+    ) -> None:
         self.cache_ttl_seconds = cache_ttl_seconds
         self.shadow_mode = shadow_mode
+        self.policy = ConfidencePolicy(confidence_policy or {})
 
-    def _confidence_from_snapshots(self, snapshots: Iterable[ProviderSnapshot]) -> float:
-        values = [max(0.0, min(1.0, s.score)) for s in snapshots]
-        if not values:
+    def _weighted_scores(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> List[float]:
+        cfg = self.policy.config_for_pair(pair)
+        neutralize_degraded = bool(cfg.get("neutralize_degraded_provider_score", True))
+        values: List[float] = []
+        for s in snapshots:
+            score = max(0.0, min(1.0, float(s.score)))
+            if s.status == "degraded" and neutralize_degraded:
+                score = 0.50
+            weight = self.policy.weight_for_provider(s.provider)
+            values.append(score * max(weight, 0.0))
+        return values
+
+    def _confidence_from_snapshots(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> float:
+        snaps = list(snapshots)
+        if not snaps:
             return 0.0
-        return round(sum(values) / len(values), 4)
+        weighted = self._weighted_scores(snaps, pair)
+        total_weight = sum(max(self.policy.weight_for_provider(s.provider), 0.0) for s in snaps)
+        if total_weight <= 0:
+            return 0.0
+        return round(sum(weighted) / total_weight, 4)
 
-    def _risk_score_from_snapshots(self, snapshots: Iterable[ProviderSnapshot]) -> float:
+    def _risk_score_from_snapshots(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> float:
         flags = sum(len(s.risk_flags) for s in snapshots)
-        return round(min(flags * 0.1, 0.8), 4)
+        base = min(flags * 0.1, 0.8)
+        cfg = self.policy.config_for_pair(pair)
+        bias = float(cfg.get("risk_bias", 0.0))
+        return round(max(0.0, min(base + bias, 1.0)), 4)
 
     def _market_regime(self, snapshots: Iterable[ProviderSnapshot]) -> str:
         for s in snapshots:
@@ -37,19 +63,28 @@ class DecisionAggregator:
         return "range"
 
     def build_pair_decision(self, pair: str, snapshots: List[ProviderSnapshot]) -> Dict[str, Any]:
-        confidence = self._confidence_from_snapshots(snapshots)
-        risk_score = self._risk_score_from_snapshots(snapshots)
+        cfg = self.policy.config_for_pair(pair)
+        confidence = self._confidence_from_snapshots(snapshots, pair)
+        risk_score = self._risk_score_from_snapshots(snapshots, pair)
         regime = self._market_regime(snapshots)
 
-        entry_allowed = confidence >= 0.75 and risk_score <= 0.40
-        stake_multiplier = 1.0
-        if confidence >= 0.80 and regime == "trend":
-            stake_multiplier = 1.35
-        elif confidence >= 0.72:
-            stake_multiplier = 1.15
+        entry_min_confidence = float(cfg.get("entry_min_confidence", 0.75))
+        max_risk_score = float(cfg.get("max_risk_score", 0.40))
+        entry_allowed = confidence >= entry_min_confidence and risk_score <= max_risk_score
 
-        target_rr = 2.8 if regime == "trend" else 1.8
-        agent_stoploss = -0.035 if confidence >= 0.80 else -0.045
+        stake_multiplier = 1.0
+        if confidence >= max(entry_min_confidence + 0.05, 0.80) and regime == "trend":
+            stake_multiplier = float(cfg.get("trend_high_conf_stake_multiplier", 1.35))
+        elif confidence >= entry_min_confidence:
+            stake_multiplier = float(cfg.get("base_live_stake_multiplier", 1.15))
+
+        target_rr = float(cfg.get("base_target_rr", 1.8))
+        if regime == "trend":
+            target_rr = float(cfg.get("trend_target_rr", 2.8))
+
+        agent_stoploss = float(cfg.get("base_agent_stoploss", -0.045))
+        if confidence >= max(entry_min_confidence + 0.05, 0.80):
+            agent_stoploss = float(cfg.get("high_conf_agent_stoploss", -0.035))
 
         providers = {
             s.provider: {
@@ -57,6 +92,7 @@ class DecisionAggregator:
                 "score": s.score,
                 "ts": s.ts,
                 "stale": s.stale,
+                "weight": self.policy.weight_for_provider(s.provider),
             }
             for s in snapshots
         }
@@ -71,13 +107,13 @@ class DecisionAggregator:
             "providers": providers,
             "entry": {
                 "entry_allowed": entry_allowed,
-                "entry_reason": "multi_skill_alignment" if entry_allowed else "confidence_or_risk_blocked",
-                "entry_min_confidence": 0.75,
+                "entry_reason": "weighted_multi_skill_alignment" if entry_allowed else "confidence_or_risk_blocked",
+                "entry_min_confidence": entry_min_confidence,
             },
             "stake": {
                 "stake_multiplier": stake_multiplier,
-                "stake_cap_ratio": 0.12,
-                "stake_reason": "aggregated_provider_signal",
+                "stake_cap_ratio": float(cfg.get("stake_cap_ratio", 0.12)),
+                "stake_reason": "weighted_provider_signal",
             },
             "exit": {
                 "exit_signal": False,
@@ -90,11 +126,12 @@ class DecisionAggregator:
             },
             "roi": {
                 "target_rr": target_rr,
-                "roi_min_trade_duration": 5,
+                "roi_min_trade_duration": int(cfg.get("roi_min_trade_duration", 5)),
             },
             "trace": {
                 "decision_id": f"dec_{pair.replace('/', '_').lower()}_{utc_now_iso().replace(':', '').replace('-', '')}",
                 "evidence_refs": [f"{s.provider}:{pair}" for s in snapshots],
+                "policy_snapshot": cfg,
             },
             "entry_allowed": entry_allowed,
             "stake_multiplier": stake_multiplier,
@@ -135,19 +172,3 @@ class DecisionAggregator:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         return out
-
-
-if __name__ == "__main__":
-    from agent_service.providers.market_data.tradingview_mcp_provider import TradingViewMcpProvider
-    from agent_service.providers.onchain.dexpaprika_provider import DexPaprikaProvider
-
-    tv = TradingViewMcpProvider(default_timeframe="1h")
-    dex = DexPaprikaProvider()
-
-    pair_snapshots = {
-        "BTC/USDT": [tv.fetch("BTC/USDT", {"timeframe": "1h"}), dex.fetch("BTC/USDT")],
-        "ETH/USDT": [tv.fetch("ETH/USDT", {"timeframe": "1h"}), dex.fetch("ETH/USDT")],
-    }
-
-    out = DecisionAggregator().write_decision_cache(pair_snapshots)
-    print(out)

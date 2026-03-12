@@ -11,27 +11,57 @@ from agent_service.providers.provider_registry import (
     build_default_provider_registry,
     build_pair_provider_map,
 )
-from agent_service.providers.provider_rollout import ProviderRolloutPolicy
 
 
 DEFAULT_PAIRS = ["BTC/USDT", "ETH/USDT"]
 ROLLOUT_CONFIG_PATH = "user_data/config/provider_rollout.json"
+CONFIDENCE_POLICY_PATH = "user_data/config/confidence_policy.json"
+
+
+def load_json(path: str, default: dict) -> dict:
+    p = Path(path)
+    if not p.exists():
+        return default
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 def load_rollout_config(path: str = ROLLOUT_CONFIG_PATH) -> dict:
-    p = Path(path)
-    if not p.exists():
-        return {
+    return load_json(
+        path,
+        {
             "enabled_pairs": DEFAULT_PAIRS,
-            "provider_defaults": {
-                "tradingview_mcp": True,
-                "dexpaprika": True,
-            },
+            "provider_defaults": {"tradingview_mcp": True, "dexpaprika": True},
             "required_provider_names": ["tradingview_mcp", "dexpaprika"],
             "rollout_stage": "pair_provider_enablement_v1",
             "pair_provider_overrides": {},
-        }
-    return json.loads(p.read_text(encoding="utf-8"))
+        },
+    )
+
+
+def load_confidence_policy(path: str = CONFIDENCE_POLICY_PATH) -> dict:
+    return load_json(
+        path,
+        {
+            "global_defaults": {
+                "entry_min_confidence": 0.75,
+                "max_risk_score": 0.40,
+                "neutralize_degraded_provider_score": True,
+                "base_live_stake_multiplier": 1.15,
+                "trend_high_conf_stake_multiplier": 1.35,
+                "base_target_rr": 1.8,
+                "trend_target_rr": 2.8,
+                "base_agent_stoploss": -0.045,
+                "high_conf_agent_stoploss": -0.035,
+                "stake_cap_ratio": 0.12,
+                "roi_min_trade_duration": 5
+            },
+            "provider_weights": {
+                "tradingview_mcp": 1.0,
+                "dexpaprika": 1.0
+            },
+            "pair_overrides": {}
+        },
+    )
 
 
 def collect_pair_snapshots(pair_provider_map: Dict[str, List[SkillProvider]]) -> Dict[str, List[ProviderSnapshot]]:
@@ -47,23 +77,11 @@ def collect_pair_snapshots(pair_provider_map: Dict[str, List[SkillProvider]]) ->
     return pair_snapshots
 
 
-def build_rollout_report(
-    rollout_config: dict,
-    pair_provider_map: Dict[str, List[SkillProvider]],
-) -> dict:
-    policy = ProviderRolloutPolicy(rollout_config)
-    report = {"pairs": {}}
-    for pair, providers in pair_provider_map.items():
-        report["pairs"][pair] = {
-            "pair_enabled": policy.is_pair_enabled(pair),
-            "rollout_stage": policy.rollout_stage_for_pair(pair),
-            "required_providers": policy.required_providers_for_pair(pair),
-            "enabled_providers": [p.name for p in providers],
-        }
-    return report
+def build_confidence_policy_report(confidence_policy: dict) -> dict:
+    return {"confidence_policy": confidence_policy}
 
 
-def write_rollout_report(report: dict, output_path: str = "agent_service/reports/provider_rollout_report.json") -> Path:
+def write_confidence_policy_report(report: dict, output_path: str = "agent_service/reports/confidence_policy_report.json") -> Path:
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -72,18 +90,21 @@ def write_rollout_report(report: dict, output_path: str = "agent_service/reports
 
 def main():
     rollout_config = load_rollout_config()
+    confidence_policy = load_confidence_policy()
 
     providers = build_default_provider_registry()
     write_provider_health_report(providers)
+    write_confidence_policy_report(build_confidence_policy_report(confidence_policy))
 
     pairs = rollout_config.get("enabled_pairs", DEFAULT_PAIRS)
     pair_provider_map = build_pair_provider_map(pairs, rollout_config=rollout_config)
     pair_snapshots = collect_pair_snapshots(pair_provider_map)
 
-    rollout_report = build_rollout_report(rollout_config, pair_provider_map)
-    write_rollout_report(rollout_report)
-
-    aggregator = DecisionAggregator(cache_ttl_seconds=90, shadow_mode=True)
+    aggregator = DecisionAggregator(
+        cache_ttl_seconds=90,
+        shadow_mode=True,
+        confidence_policy=confidence_policy,
+    )
     out = aggregator.write_decision_cache(pair_snapshots)
     print(out)
 
