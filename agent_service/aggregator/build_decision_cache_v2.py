@@ -13,6 +13,8 @@ from agent_service.aggregator.rollout_state_report import write_rollout_state_re
 from agent_service.aggregator.final_readiness_checklist import FinalReadinessChecklist
 from agent_service.aggregator.operator_handoff_pack import build_operator_handoff_pack
 from agent_service.aggregator.review_summary_report import write_review_summary_report
+from agent_service.aggregator.freeze_escalation_policy import FreezeEscalationPolicy
+from agent_service.aggregator.escalation_report import write_escalation_report
 from agent_service.providers.provider_base import ProviderSnapshot, SkillProvider
 from agent_service.providers.provider_registry import build_default_provider_registry, build_pair_provider_map
 
@@ -25,6 +27,7 @@ COOLDOWN_POLICY_PATH = "user_data/config/cooldown_policy.json"
 GOVERNANCE_POLICY_PATH = "user_data/config/governance_policy.json"
 ROLLOUT_STATE_POLICY_PATH = "user_data/config/rollout_state_policy.json"
 READINESS_POLICY_PATH = "user_data/config/readiness_policy.json"
+FREEZE_ESCALATION_POLICY_PATH = "user_data/config/freeze_escalation_policy.json"
 
 
 def load_json(path: str, default: dict) -> dict:
@@ -32,53 +35,6 @@ def load_json(path: str, default: dict) -> dict:
     if not p.exists():
         return default
     return json.loads(p.read_text(encoding="utf-8"))
-
-
-def load_rollout_config(path: str = ROLLOUT_CONFIG_PATH) -> dict:
-    return load_json(path, {
-        "enabled_pairs": DEFAULT_PAIRS,
-        "provider_defaults": {"tradingview_mcp": True, "dexpaprika": True},
-        "required_provider_names": ["tradingview_mcp", "dexpaprika"],
-        "rollout_stage": "pair_provider_enablement_v1",
-        "pair_provider_overrides": {},
-    })
-
-
-def load_confidence_policy(path: str = CONFIDENCE_POLICY_PATH) -> dict:
-    return load_json(path, {"global_defaults": {}, "provider_weights": {}, "pair_overrides": {}})
-
-
-def load_execution_policy(path: str = EXECUTION_POLICY_PATH) -> dict:
-    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
-
-
-def load_anomaly_policy(path: str = ANOMALY_POLICY_PATH) -> dict:
-    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
-
-
-def load_cooldown_policy(path: str = COOLDOWN_POLICY_PATH) -> dict:
-    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
-
-
-def load_governance_policy(path: str = GOVERNANCE_POLICY_PATH) -> dict:
-    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
-
-
-def load_rollout_state_policy(path: str = ROLLOUT_STATE_POLICY_PATH) -> dict:
-    return load_json(path, {"global_defaults": {}, "pair_overrides": {}})
-
-
-def load_readiness_policy(path: str = READINESS_POLICY_PATH) -> dict:
-    return load_json(path, {
-        "global_defaults": {
-            "min_readiness_score": 3,
-            "require_governance_approved": True,
-            "require_rollout_not_frozen": True,
-            "require_provider_gate_passed": True,
-            "require_no_blocking_anomaly": True
-        },
-        "pair_overrides": {}
-    })
 
 
 def collect_pair_snapshots(pair_provider_map: Dict[str, List[SkillProvider]]) -> Dict[str, List[ProviderSnapshot]]:
@@ -102,14 +58,24 @@ def write_json_report(payload: dict, output_path: str) -> Path:
 
 
 def main():
-    rollout_config = load_rollout_config()
-    confidence_policy = load_confidence_policy()
-    execution_policy = load_execution_policy()
-    anomaly_policy = load_anomaly_policy()
-    cooldown_policy = load_cooldown_policy()
-    governance_policy = load_governance_policy()
-    rollout_state_policy = load_rollout_state_policy()
-    readiness_policy = load_readiness_policy()
+    rollout_config = load_json(ROLLOUT_CONFIG_PATH, {"enabled_pairs": DEFAULT_PAIRS, "provider_defaults": {"tradingview_mcp": True, "dexpaprika": True}, "required_provider_names": ["tradingview_mcp", "dexpaprika"], "rollout_stage": "pair_provider_enablement_v1", "pair_provider_overrides": {}})
+    confidence_policy = load_json(CONFIDENCE_POLICY_PATH, {"global_defaults": {}, "provider_weights": {}, "pair_overrides": {}})
+    execution_policy = load_json(EXECUTION_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
+    anomaly_policy = load_json(ANOMALY_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
+    cooldown_policy = load_json(COOLDOWN_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
+    governance_policy = load_json(GOVERNANCE_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
+    rollout_state_policy = load_json(ROLLOUT_STATE_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
+    readiness_policy = load_json(READINESS_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
+    freeze_escalation_policy = load_json(FREEZE_ESCALATION_POLICY_PATH, {
+        "global_defaults": {
+            "freeze_on_hold_verdict": True,
+            "escalate_on_review_verdict": True,
+            "escalate_on_blocking_anomaly": True,
+            "escalate_on_active_cooldown": False,
+            "default_action": "continue_shadow"
+        },
+        "pair_overrides": {}
+    })
 
     providers = build_default_provider_registry()
     write_provider_health_report(providers)
@@ -120,6 +86,7 @@ def main():
     write_json_report({"governance_policy": governance_policy}, "agent_service/reports/governance_policy_report.json")
     write_json_report({"rollout_state_policy": rollout_state_policy}, "agent_service/reports/rollout_state_policy_report.json")
     write_json_report({"readiness_policy": readiness_policy}, "agent_service/reports/readiness_policy_report.json")
+    write_json_report({"freeze_escalation_policy": freeze_escalation_policy}, "agent_service/reports/freeze_escalation_policy_report.json")
 
     pairs = rollout_config.get("enabled_pairs", DEFAULT_PAIRS)
     pair_provider_map = build_pair_provider_map(pairs, rollout_config=rollout_config)
@@ -177,7 +144,21 @@ def main():
         )
     write_review_summary_report(review_summary)
 
+    freeze_policy = FreezeEscalationPolicy(freeze_escalation_policy)
+    escalation_summary = {"pairs": {}}
+    for pair, meta in payload.get("pairs", {}).items():
+        escalation_summary["pairs"][pair] = freeze_policy.evaluate(
+            pair=pair,
+            readiness=review_summary["pairs"].get(pair, {}),
+            anomaly_guard=meta.get("anomaly_guard", {}),
+            cooldown_guard=meta.get("cooldown_guard", {}),
+            rollout_state_machine=meta.get("rollout_state_machine", {}),
+        )
+    write_escalation_report(escalation_summary)
+
     handoff_pack = build_operator_handoff_pack(payload)
+    handoff_pack["review_summary"] = review_summary
+    handoff_pack["escalation_summary"] = escalation_summary
     write_json_report(handoff_pack, "agent_service/reports/operator_handoff_pack.json")
 
     out = Path("user_data/agent_runtime/state/decision_cache.json")
