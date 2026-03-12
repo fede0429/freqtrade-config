@@ -22,7 +22,7 @@ class TradingViewMcpProvider(MarketDataProvider):
             kind=self.kind,
             status="ok",
             ts=utc_now_iso(),
-            detail="skeleton_provider",
+            detail="snapshot_provider",
         )
 
     def supports_pair(self, pair: str) -> bool:
@@ -44,11 +44,7 @@ class TradingViewMcpProvider(MarketDataProvider):
         self, pair: str, timeframe: str, context: Optional[Dict[str, Any]] = None
     ) -> ProviderSnapshot:
         symbol = pair.replace("/", "")
-        signals = self._call_mcp_tool(
-            "get_indicators",
-            {"symbol": symbol, "timeframe": timeframe},
-        )
-
+        signals = self._call_mcp_tool("get_indicators", {"symbol": symbol, "timeframe": timeframe})
         trend = signals.get("trend", "neutral")
         score = 0.50
         if trend == "bullish":
@@ -71,9 +67,5 @@ class TradingViewMcpProvider(MarketDataProvider):
             score=score,
             signals=signals,
             risk_flags=risk_flags,
-            raw_ref={
-                "tool": "get_indicators",
-                "source": self.name,
-                "timeframe": timeframe,
-            },
+            raw_ref={"tool": "get_indicators", "source": self.name, "timeframe": timeframe},
         )

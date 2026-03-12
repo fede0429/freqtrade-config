@@ -40,10 +40,8 @@ class GovernanceGatekeeper:
 
         if bool(cfg.get("require_provider_gate_passed", True)) and not bool(provider_gate.get("provider_gate_passed", False)):
             reasons.append("provider_gate_failed")
-
         if bool(cfg.get("require_no_blocking_anomaly", True)) and bool(anomaly_guard.get("blocking", False)):
             reasons.append("blocking_anomaly")
-
         if bool(cfg.get("require_no_active_cooldown", False)) and bool(cooldown_guard.get("active", False)):
             reasons.append("active_cooldown")
 

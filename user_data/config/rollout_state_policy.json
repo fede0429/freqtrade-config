@@ -13,15 +13,8 @@
     "freeze_on_blocking_anomaly": true
   },
   "pair_overrides": {
-    "BTC/USDT": {
-      "promote_when_governance_approved": true
-    },
-    "ETH/USDT": {
-      "promote_when_governance_approved": true
-    },
-    "SOL/USDT": {
-      "freeze_on_active_cooldown": true,
-      "freeze_on_blocking_anomaly": true
-    }
+    "BTC/USDT": {"promote_when_governance_approved": true},
+    "ETH/USDT": {"promote_when_governance_approved": true},
+    "SOL/USDT": {"freeze_on_active_cooldown": true, "freeze_on_blocking_anomaly": true}
   }
 }

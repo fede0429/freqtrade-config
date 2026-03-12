@@ -6,18 +6,8 @@
     "default_trading_mode": "shadow_only"
   },
   "pair_overrides": {
-    "BTC/USDT": {
-      "approved_trading_mode": "paper_candidate",
-      "blocked_trading_mode": "shadow_only"
-    },
-    "ETH/USDT": {
-      "approved_trading_mode": "paper_candidate",
-      "blocked_trading_mode": "technical_shadow"
-    },
-    "SOL/USDT": {
-      "require_no_active_cooldown": true,
-      "approved_trading_mode": "candidate_shadow",
-      "blocked_trading_mode": "shadow_only"
-    }
+    "BTC/USDT": {"approved_trading_mode": "paper_candidate", "blocked_trading_mode": "shadow_only"},
+    "ETH/USDT": {"approved_trading_mode": "paper_candidate", "blocked_trading_mode": "technical_shadow"},
+    "SOL/USDT": {"require_no_active_cooldown": true, "approved_trading_mode": "candidate_shadow", "blocked_trading_mode": "shadow_only"}
   }
 }

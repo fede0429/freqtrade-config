@@ -7,17 +7,8 @@
     "default_action": "continue_shadow"
   },
   "pair_overrides": {
-    "BTC/USDT": {
-      "freeze_on_hold_verdict": true,
-      "escalate_on_review_verdict": true
-    },
-    "ETH/USDT": {
-      "freeze_on_hold_verdict": true,
-      "escalate_on_review_verdict": true
-    },
-    "SOL/USDT": {
-      "freeze_on_hold_verdict": true,
-      "escalate_on_active_cooldown": true
-    }
+    "BTC/USDT": {"freeze_on_hold_verdict": true, "escalate_on_review_verdict": true},
+    "ETH/USDT": {"freeze_on_hold_verdict": true, "escalate_on_review_verdict": true},
+    "SOL/USDT": {"freeze_on_hold_verdict": true, "escalate_on_active_cooldown": true}
   }
 }

@@ -38,7 +38,6 @@ class FinalReadinessChecklist:
     ) -> Dict[str, Any]:
         cfg = self.config_for_pair(pair)
         reasons = []
-
         if bool(cfg.get("require_governance_approved", True)) and not bool(governance_gatekeeper.get("approved", False)):
             reasons.append("governance_not_approved")
         if bool(cfg.get("require_rollout_not_frozen", True)) and bool(rollout_state_machine.get("frozen", False)):

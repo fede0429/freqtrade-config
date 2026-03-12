@@ -29,10 +29,8 @@ class ProviderRolloutPolicy:
         pair = pair.upper()
         if not self.is_pair_enabled(pair):
             return []
-
         defaults = self.provider_defaults()
         overrides = self.pair_overrides().get(pair, {})
-
         provider_names = list(available_provider_names)
         disabled = set(_upper_pairs(overrides.get("disabled_providers", [])))
         forced = set(_upper_pairs(overrides.get("forced_providers", [])))
@@ -45,7 +43,6 @@ class ProviderRolloutPolicy:
                 continue
             if default_enabled or upper in forced:
                 enabled.append(name)
-
         return enabled
 
     def required_providers_for_pair(self, pair: str) -> List[str]:

@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Dict
 
-from agent_service.providers.provider_base import ProviderHealth, SkillProvider
+from agent_service.providers.provider_base import SkillProvider
 
 
 def build_provider_health_report(providers: Dict[str, SkillProvider]) -> dict:

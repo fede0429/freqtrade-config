@@ -44,42 +44,31 @@ class AnomalyGuard:
 
         for s in snapshots:
             if s.latency_ms > max_latency:
-                issues.append(
-                    {
-                        "provider": s.provider,
-                        "kind": "high_latency",
-                        "value": s.latency_ms,
-                        "threshold": max_latency,
-                        "blocking": block_on_high_latency,
-                    }
-                )
+                issues.append({
+                    "provider": s.provider,
+                    "kind": "high_latency",
+                    "value": s.latency_ms,
+                    "threshold": max_latency,
+                    "blocking": block_on_high_latency,
+                })
             flagged = [flag for flag in s.risk_flags if flag in blocked_flags]
             if flagged:
-                issues.append(
-                    {
-                        "provider": s.provider,
-                        "kind": "risk_flags",
-                        "value": flagged,
-                        "threshold": list(blocked_flags),
-                        "blocking": True,
-                    }
-                )
+                issues.append({
+                    "provider": s.provider,
+                    "kind": "risk_flags",
+                    "value": flagged,
+                    "threshold": list(blocked_flags),
+                    "blocking": True,
+                })
 
         if drift > max_score_drift:
-            issues.append(
-                {
-                    "provider": "multi_provider",
-                    "kind": "score_drift",
-                    "value": round(drift, 4),
-                    "threshold": max_score_drift,
-                    "blocking": block_on_high_drift,
-                }
-            )
+            issues.append({
+                "provider": "multi_provider",
+                "kind": "score_drift",
+                "value": round(drift, 4),
+                "threshold": max_score_drift,
+                "blocking": block_on_high_drift,
+            })
 
         blocking = any(bool(i.get("blocking", False)) for i in issues)
-        return {
-            "pair": pair,
-            "issues": issues,
-            "blocking": blocking,
-            "score_drift": round(drift, 4),
-        }
+        return {"pair": pair, "issues": issues, "blocking": blocking, "score_drift": round(drift, 4)}

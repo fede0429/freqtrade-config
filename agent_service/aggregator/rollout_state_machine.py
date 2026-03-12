@@ -53,7 +53,6 @@ class RolloutStateMachine:
         if bool(cfg.get("freeze_on_blocking_anomaly", True)) and bool(anomaly_guard.get("blocking", False)):
             frozen = True
             recommendations.append("freeze_due_to_blocking_anomaly")
-
         if bool(cfg.get("freeze_on_active_cooldown", True)) and bool(cooldown_guard.get("active", False)):
             frozen = True
             recommendations.append("freeze_due_to_active_cooldown")

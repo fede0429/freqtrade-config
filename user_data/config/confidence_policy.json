@@ -12,25 +12,10 @@
     "stake_cap_ratio": 0.12,
     "roi_min_trade_duration": 5
   },
-  "provider_weights": {
-    "tradingview_mcp": 1.0,
-    "dexpaprika": 0.85
-  },
+  "provider_weights": {"tradingview_mcp": 1.0, "dexpaprika": 0.85},
   "pair_overrides": {
-    "BTC/USDT": {
-      "entry_min_confidence": 0.78,
-      "trend_high_conf_stake_multiplier": 1.40,
-      "trend_target_rr": 3.0
-    },
-    "ETH/USDT": {
-      "entry_min_confidence": 0.74,
-      "max_risk_score": 0.35,
-      "risk_bias": 0.05
-    },
-    "SOL/USDT": {
-      "entry_min_confidence": 0.82,
-      "base_live_stake_multiplier": 1.05,
-      "stake_cap_ratio": 0.08
-    }
+    "BTC/USDT": {"entry_min_confidence": 0.78, "trend_high_conf_stake_multiplier": 1.40, "trend_target_rr": 3.0},
+    "ETH/USDT": {"entry_min_confidence": 0.74, "max_risk_score": 0.35, "risk_bias": 0.05},
+    "SOL/USDT": {"entry_min_confidence": 0.82, "base_live_stake_multiplier": 1.05, "stake_cap_ratio": 0.08}
   }
 }

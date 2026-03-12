@@ -9,32 +9,8 @@
     "allow_roi": true
   },
   "pair_overrides": {
-    "BTC/USDT": {
-      "min_provider_count": 2,
-      "allow_entry_confirm": true,
-      "allow_stake": true,
-      "allow_exit": true,
-      "allow_stoploss": true,
-      "allow_roi": true,
-      "fallback_mode": "base_strategy_only"
-    },
-    "ETH/USDT": {
-      "min_provider_count": 1,
-      "allow_entry_confirm": true,
-      "allow_stake": true,
-      "allow_exit": true,
-      "allow_stoploss": true,
-      "allow_roi": false,
-      "fallback_mode": "base_strategy_only"
-    },
-    "SOL/USDT": {
-      "min_provider_count": 1,
-      "allow_entry_confirm": true,
-      "allow_stake": false,
-      "allow_exit": true,
-      "allow_stoploss": true,
-      "allow_roi": false,
-      "fallback_mode": "shadow_only_pair"
-    }
+    "BTC/USDT": {"min_provider_count": 2, "allow_roi": true, "fallback_mode": "base_strategy_only"},
+    "ETH/USDT": {"min_provider_count": 1, "allow_roi": false, "fallback_mode": "base_strategy_only"},
+    "SOL/USDT": {"min_provider_count": 1, "allow_stake": false, "allow_roi": false, "fallback_mode": "shadow_only_pair"}
   }
 }

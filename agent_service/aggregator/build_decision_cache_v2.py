@@ -66,16 +66,7 @@ def main():
     governance_policy = load_json(GOVERNANCE_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
     rollout_state_policy = load_json(ROLLOUT_STATE_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
     readiness_policy = load_json(READINESS_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
-    freeze_escalation_policy = load_json(FREEZE_ESCALATION_POLICY_PATH, {
-        "global_defaults": {
-            "freeze_on_hold_verdict": True,
-            "escalate_on_review_verdict": True,
-            "escalate_on_blocking_anomaly": True,
-            "escalate_on_active_cooldown": False,
-            "default_action": "continue_shadow"
-        },
-        "pair_overrides": {}
-    })
+    freeze_escalation_policy = load_json(FREEZE_ESCALATION_POLICY_PATH, {"global_defaults": {}, "pair_overrides": {}})
 
     providers = build_default_provider_registry()
     write_provider_health_report(providers)
@@ -106,30 +97,24 @@ def main():
     payload = aggregator.build_decision_cache(pair_snapshots)
     append_decision_history(payload)
 
-    approval_summary = {
-        "pairs": {
-            pair: {
-                "governance_gate": meta.get("governance_gate"),
-                "trading_mode": meta.get("trading_mode"),
-                "governance_gatekeeper": meta.get("governance_gatekeeper"),
-                "anomaly_guard": meta.get("anomaly_guard"),
-                "cooldown_guard": meta.get("cooldown_guard"),
-            }
-            for pair, meta in payload.get("pairs", {}).items()
-        }
-    }
+    approval_summary = {"pairs": {
+        pair: {
+            "governance_gate": meta.get("governance_gate"),
+            "trading_mode": meta.get("trading_mode"),
+            "governance_gatekeeper": meta.get("governance_gatekeeper"),
+            "anomaly_guard": meta.get("anomaly_guard"),
+            "cooldown_guard": meta.get("cooldown_guard"),
+        } for pair, meta in payload.get("pairs", {}).items()
+    }}
     write_approval_summary_report(approval_summary)
 
-    rollout_summary = {
-        "pairs": {
-            pair: {
-                "rollout_state": meta.get("rollout_state"),
-                "trading_mode": meta.get("trading_mode"),
-                "rollout_state_machine": meta.get("rollout_state_machine"),
-            }
-            for pair, meta in payload.get("pairs", {}).items()
-        }
-    }
+    rollout_summary = {"pairs": {
+        pair: {
+            "rollout_state": meta.get("rollout_state"),
+            "trading_mode": meta.get("trading_mode"),
+            "rollout_state_machine": meta.get("rollout_state_machine"),
+        } for pair, meta in payload.get("pairs", {}).items()
+    }}
     write_rollout_state_report(rollout_summary)
 
     checklist = FinalReadinessChecklist(readiness_policy)

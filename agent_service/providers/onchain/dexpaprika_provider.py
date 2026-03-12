@@ -19,7 +19,7 @@ class DexPaprikaProvider(OnchainLiquidityProvider):
             kind=self.kind,
             status="ok",
             ts=utc_now_iso(),
-            detail="skeleton_provider",
+            detail="snapshot_provider",
         )
 
     def supports_pair(self, pair: str) -> bool:
@@ -40,7 +40,6 @@ class DexPaprikaProvider(OnchainLiquidityProvider):
         self, pair: str, context: Optional[Dict[str, Any]] = None
     ) -> ProviderSnapshot:
         signals = self._fetch_dex_snapshot(pair)
-
         liquidity_usd = float(signals.get("liquidity_usd", 0))
         score = 0.40
         if liquidity_usd >= 2000000:
@@ -65,8 +64,5 @@ class DexPaprikaProvider(OnchainLiquidityProvider):
             score=score,
             signals=signals,
             risk_flags=risk_flags,
-            raw_ref={
-                "tool": "dex_liquidity_snapshot",
-                "source": self.name,
-            },
+            raw_ref={"tool": "dex_liquidity_snapshot", "source": self.name},
         )

@@ -46,19 +46,15 @@ class FreezeEscalationPolicy:
         if verdict == "hold" and bool(cfg.get("freeze_on_hold_verdict", True)):
             freeze = True
             reasons.append("freeze_on_hold_verdict")
-
         if verdict == "review" and bool(cfg.get("escalate_on_review_verdict", True)):
             escalate = True
             reasons.append("escalate_on_review_verdict")
-
         if bool(anomaly_guard.get("blocking", False)) and bool(cfg.get("escalate_on_blocking_anomaly", True)):
             escalate = True
             reasons.append("escalate_on_blocking_anomaly")
-
         if bool(cooldown_guard.get("active", False)) and bool(cfg.get("escalate_on_active_cooldown", False)):
             escalate = True
             reasons.append("escalate_on_active_cooldown")
-
         if bool(rollout_state_machine.get("frozen", False)):
             freeze = True
             reasons.append("freeze_on_rollout_state")
@@ -71,9 +67,4 @@ class FreezeEscalationPolicy:
         elif verdict == "go":
             action = "ready_for_snapshot"
 
-        return {
-            "freeze": freeze,
-            "escalate": escalate,
-            "action": action,
-            "reasons": reasons,
-        }
+        return {"freeze": freeze, "escalate": escalate, "action": action, "reasons": reasons}

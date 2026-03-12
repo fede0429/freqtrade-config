@@ -33,5 +33,4 @@ def build_pair_provider_map(
             if provider.supports_pair(pair):
                 providers.append(provider)
         pair_map[pair] = providers
-
     return pair_map
