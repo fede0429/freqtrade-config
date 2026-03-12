@@ -1,0 +1,27 @@
+{
+  "global_defaults": {
+    "mode_to_state": {
+      "shadow_only": "shadow",
+      "technical_shadow": "shadow",
+      "candidate_shadow": "candidate",
+      "paper_candidate": "paper",
+      "paper_ready": "paper",
+      "limited_live_candidate": "limited_live"
+    },
+    "promote_when_governance_approved": true,
+    "freeze_on_active_cooldown": true,
+    "freeze_on_blocking_anomaly": true
+  },
+  "pair_overrides": {
+    "BTC/USDT": {
+      "promote_when_governance_approved": true
+    },
+    "ETH/USDT": {
+      "promote_when_governance_approved": true
+    },
+    "SOL/USDT": {
+      "freeze_on_active_cooldown": true,
+      "freeze_on_blocking_anomaly": true
+    }
+  }
+}

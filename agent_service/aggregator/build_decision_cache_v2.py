@@ -9,6 +9,7 @@ from agent_service.aggregator.provider_health_report import write_provider_healt
 from agent_service.aggregator.observability_report import write_observability_report
 from agent_service.aggregator.decision_history_writer import append_decision_history
 from agent_service.aggregator.approval_summary_report import write_approval_summary_report
+from agent_service.aggregator.rollout_state_report import write_rollout_state_report
 from agent_service.providers.provider_base import ProviderSnapshot, SkillProvider
 from agent_service.providers.provider_registry import build_default_provider_registry, build_pair_provider_map
 
@@ -19,6 +20,7 @@ EXECUTION_POLICY_PATH = "user_data/config/execution_policy.json"
 ANOMALY_POLICY_PATH = "user_data/config/anomaly_policy.json"
 COOLDOWN_POLICY_PATH = "user_data/config/cooldown_policy.json"
 GOVERNANCE_POLICY_PATH = "user_data/config/governance_policy.json"
+ROLLOUT_STATE_POLICY_PATH = "user_data/config/rollout_state_policy.json"
 
 
 def load_json(path: str, default: dict) -> dict:
@@ -110,6 +112,25 @@ def load_governance_policy(path: str = GOVERNANCE_POLICY_PATH) -> dict:
     })
 
 
+def load_rollout_state_policy(path: str = ROLLOUT_STATE_POLICY_PATH) -> dict:
+    return load_json(path, {
+        "global_defaults": {
+            "mode_to_state": {
+                "shadow_only": "shadow",
+                "technical_shadow": "shadow",
+                "candidate_shadow": "candidate",
+                "paper_candidate": "paper",
+                "paper_ready": "paper",
+                "limited_live_candidate": "limited_live"
+            },
+            "promote_when_governance_approved": True,
+            "freeze_on_active_cooldown": True,
+            "freeze_on_blocking_anomaly": True
+        },
+        "pair_overrides": {}
+    })
+
+
 def collect_pair_snapshots(pair_provider_map: Dict[str, List[SkillProvider]]) -> Dict[str, List[ProviderSnapshot]]:
     pair_snapshots: Dict[str, List[ProviderSnapshot]] = {}
     for pair, providers in pair_provider_map.items():
@@ -137,6 +158,7 @@ def main():
     anomaly_policy = load_anomaly_policy()
     cooldown_policy = load_cooldown_policy()
     governance_policy = load_governance_policy()
+    rollout_state_policy = load_rollout_state_policy()
 
     providers = build_default_provider_registry()
     write_provider_health_report(providers)
@@ -145,6 +167,7 @@ def main():
     write_json_report({"anomaly_policy": anomaly_policy}, "agent_service/reports/anomaly_policy_report.json")
     write_json_report({"cooldown_policy": cooldown_policy}, "agent_service/reports/cooldown_policy_report.json")
     write_json_report({"governance_policy": governance_policy}, "agent_service/reports/governance_policy_report.json")
+    write_json_report({"rollout_state_policy": rollout_state_policy}, "agent_service/reports/rollout_state_policy_report.json")
 
     pairs = rollout_config.get("enabled_pairs", DEFAULT_PAIRS)
     pair_provider_map = build_pair_provider_map(pairs, rollout_config=rollout_config)
@@ -159,6 +182,7 @@ def main():
         anomaly_policy=anomaly_policy,
         cooldown_policy=cooldown_policy,
         governance_policy=governance_policy,
+        rollout_policy=rollout_state_policy,
     )
     payload = aggregator.build_decision_cache(pair_snapshots)
     append_decision_history(payload)
@@ -170,6 +194,16 @@ def main():
                 "governance_gatekeeper": meta.get("governance_gatekeeper"),
                 "anomaly_guard": meta.get("anomaly_guard"),
                 "cooldown_guard": meta.get("cooldown_guard"),
+            }
+            for pair, meta in payload.get("pairs", {}).items()
+        }
+    })
+    write_rollout_state_report({
+        "pairs": {
+            pair: {
+                "rollout_state": meta.get("rollout_state"),
+                "trading_mode": meta.get("trading_mode"),
+                "rollout_state_machine": meta.get("rollout_state_machine"),
             }
             for pair, meta in payload.get("pairs", {}).items()
         }
