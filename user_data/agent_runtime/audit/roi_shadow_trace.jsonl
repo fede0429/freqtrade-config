@@ -1,1 +1,0 @@
-{"ts": "2026-03-11T16:49:55.407830+00:00", "pair": "BTC/USDT", "mode": "shadow", "trade_duration": 10, "min_trade_duration": 5, "decision": {"agent_enabled": true, "confidence": 0.78, "stake_multiplier": 1.35, "entry_allowed": true, "exit_signal": false, "exit_reason": null, "stoploss_mode": "tighten_only", "agent_stoploss": -0.04, "target_rr": 2.8, "governance_gate": "passed"}}

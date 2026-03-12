@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+
+# Runtime outputs
+user_data/agent_runtime/
+agent_service/reports/
+
+# Local env
+.env
+.env.local
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Stage leftovers
+v3/
+v4/
+v5/
+v6/
+v7/
+v8/
