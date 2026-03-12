@@ -1,16 +1,15 @@
 {
   "shadow_mode": true,
   "cache_ttl_seconds": 90,
-  "max_future_skew_seconds": 5,
-  "enforce_cache_ttl_in_backtest": false,
+  "provider_ttl_seconds": 180,
+  "allow_degraded_providers": false,
+  "required_provider_names": ["tradingview_mcp", "dexpaprika"],
   "min_confidence_for_live": 0.72,
   "entry_min_confidence": 0.75,
   "max_stake_multiplier": 1.5,
-  "max_target_profit_ratio": 0.25,
   "fallback_mode": "base_strategy_only",
   "exit_min_profit_threshold": -0.01,
   "roi_min_trade_duration": 5,
-  "write_traces_in_backtest": false,
   "enabled_callbacks": {
     "stake": true,
     "exit": true,
@@ -18,9 +17,6 @@
     "roi": true,
     "entry_confirm": true
   },
-  "enabled_pairs": [
-    "BTC/USDT",
-    "ETH/USDT"
-  ],
-  "rollout_stage": "alignment_v1_all_callbacks_shadow"
+  "enabled_pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+  "rollout_stage": "bridge_snapshot_v1_shadow"
 }

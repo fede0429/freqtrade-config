@@ -5,49 +5,45 @@ from typing import Any
 from user_data.strategies.bridge_loader import BridgeLoader
 from user_data.strategies.shadow_audit_writer import ShadowAuditWriter
 
-from user_data.strategies.AdaptiveMetaStrategy import AdaptiveMetaStrategy as BaseStrategy
+# TODO:
+# 如你的主策略路径不同，请替换下面导入
+try:
+    from user_data.strategies.AdaptiveMetaStrategy import AdaptiveMetaStrategy as BaseStrategy
+except Exception:
+    class BaseStrategy:
+        timeframe = "5m"
+        stoploss = -0.10
+        process_only_new_candles = True
+        use_custom_stoploss = True
+        use_exit_signal = True
+        def bot_loop_start(self, current_time, **kwargs): return None
+        def custom_stake_amount(self, *args, **kwargs): return kwargs.get("proposed_stake")
+        def custom_exit(self, *args, **kwargs): return None
+        def custom_stoploss(self, *args, **kwargs): return None
+        def custom_roi(self, *args, **kwargs): return None
+        def confirm_trade_entry(self, *args, **kwargs): return True
 
 
 class AgentBridgeStrategy(BaseStrategy):
     agent_overlay_path = "user_data/config/agent_overlay.json"
     decision_cache_path = "user_data/agent_runtime/state/decision_cache.json"
     use_custom_stoploss = True
-    use_custom_roi = True
     use_exit_signal = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loader = BridgeLoader(self.agent_overlay_path, self.decision_cache_path)
-        self.audit: ShadowAuditWriter | None = None
+        self.audit = ShadowAuditWriter()
         self._overlay: dict[str, Any] = {}
         self._cache: dict[str, Any] = {}
         self._refresh()
 
-    def _utc_now(self) -> datetime:
+    def _utc_now(self):
         return datetime.now(timezone.utc)
 
-    def _normalize_time(self, value: datetime | None) -> datetime | None:
-        if value is None:
-            return None
-        if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
-        return value.astimezone(timezone.utc)
-
-    def _refresh(self) -> None:
+    def _refresh(self):
         self._overlay = self.loader.load_overlay()
         self._cache = self.loader.load_decision_cache()
-
-    def _runmode_name(self) -> str:
-        runmode = None
-        config = getattr(self, "config", None)
-        if isinstance(config, dict):
-            runmode = config.get("runmode")
-        if runmode is None:
-            dataprov = getattr(self, "dp", None)
-            runmode = getattr(dataprov, "runmode", None)
-        if runmode is None:
-            return ""
-        return str(getattr(runmode, "value", runmode)).lower()
 
     @property
     def shadow_mode(self) -> bool:
@@ -67,362 +63,206 @@ class AgentBridgeStrategy(BaseStrategy):
         allowed = [p.upper() for p in self._overlay.get("enabled_pairs", [])]
         return not allowed or pair.upper() in allowed
 
-    def _cache_reference_timestamp(self) -> str | None:
-        mode = str(self._cache.get("cache_ts_mode", "source")).lower()
-        if mode == "build":
-            return self._cache.get("built_at") or self._cache.get("ts")
-        return self._cache.get("ts") or self._cache.get("built_at")
-
-    def _cache_is_fresh(self, reference_time: datetime | None = None) -> bool:
-        if (
-            self._runmode_name() in {"backtest", "hyperopt"}
-            and not bool(self._overlay.get("enforce_cache_ttl_in_backtest", False))
-        ):
-            return True
-
+    def _cache_is_fresh(self) -> bool:
+        ts = self._cache.get("ts")
         ttl = int(self._overlay.get("cache_ttl_seconds", 90))
-        max_future_skew = int(self._overlay.get("max_future_skew_seconds", 5))
-        if ttl <= 0:
-            return True
-
-        ts = self._cache_reference_timestamp()
         if not ts:
             return False
-
         try:
             cache_ts = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-            compare_time = self._normalize_time(reference_time) or self._utc_now()
-            age = (compare_time - cache_ts).total_seconds()
-            return -max_future_skew <= age <= ttl
+            age = (self._utc_now() - cache_ts).total_seconds()
+            return age <= ttl
         except Exception:
             return False
 
-    def _agent_enabled_for_pair(self, pair: str, current_time: datetime | None = None) -> bool:
-        decision = self._pair_decision(pair)
-        if not decision:
+    def _providers_healthy(self, decision: dict[str, Any]) -> bool:
+        providers = decision.get("providers", {})
+        if not providers:
+            return True
+        required = set(self._overlay.get("required_provider_names", []))
+        degraded_allowed = bool(self._overlay.get("allow_degraded_providers", False))
+        max_stale = int(self._overlay.get("provider_ttl_seconds", 180))
+        now = self._utc_now()
+
+        seen_required = set()
+        for name, meta in providers.items():
+            status = str(meta.get("status", "unknown"))
+            stale = bool(meta.get("stale", False))
+            ts = meta.get("ts")
+            if name in required:
+                seen_required.add(name)
+            if status not in {"ok", "degraded"}:
+                return False
+            if status == "degraded" and not degraded_allowed:
+                return False
+            if stale:
+                return False
+            if ts:
+                try:
+                    provider_ts = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+                    age = (now - provider_ts).total_seconds()
+                    if age > max_stale:
+                        return False
+                except Exception:
+                    return False
+        if required and seen_required != required:
+            return False
+        return True
+
+    def _decision_value(self, decision: dict[str, Any], nested_key: str, flat_key: str, default=None):
+        group, _, subkey = nested_key.partition(".")
+        if group and subkey and isinstance(decision.get(group), dict):
+            if subkey in decision[group]:
+                return decision[group][subkey]
+        return decision.get(flat_key, default)
+
+    def _agent_enabled_for_pair(self, pair: str) -> bool:
+        d = self._pair_decision(pair)
+        if not d:
             return False
         if not self._pair_allowed(pair):
             return False
-        if not self._cache_is_fresh(current_time):
+        if not self._cache_is_fresh():
             return False
-        if decision.get("governance_gate") != "passed":
+        if d.get("governance_gate") != "passed":
             return False
-        return bool(decision.get("agent_enabled", False))
+        if not self._providers_healthy(d):
+            return False
+        return bool(d.get("agent_enabled", False))
 
-    def _should_write_trace(self) -> bool:
-        if self._runmode_name() in {"backtest", "hyperopt"}:
-            return bool(self._overlay.get("write_traces_in_backtest", False))
-        return True
-
-    def _serialize_value(self, value: Any) -> Any:
-        if isinstance(value, datetime):
-            normalized = self._normalize_time(value)
-            return normalized.isoformat() if normalized else None
-        if isinstance(value, dict):
-            return {str(key): self._serialize_value(item) for key, item in value.items()}
-        if isinstance(value, (list, tuple)):
-            return [self._serialize_value(item) for item in value]
-        return value
-
-    def _audit_writer(self) -> ShadowAuditWriter:
-        if self.audit is None:
-            self.audit = ShadowAuditWriter()
-        return self.audit
-
-    def _trace(self, filename: str, payload: dict[str, Any], event_time: datetime | None = None) -> None:
-        if not self._should_write_trace():
-            return
-        row = self._serialize_value(payload)
-        if event_time is not None:
-            normalized = self._normalize_time(event_time)
-            row["event_time"] = normalized.isoformat() if normalized else str(event_time)
-        self._audit_writer().append_event(filename, row)
-
-    def _call_parent(self, method_name: str, *args, **kwargs):
-        parent = getattr(super(), method_name, None)
-        return parent(*args, **kwargs) if callable(parent) else None
-
-    def _as_float(self, value: Any) -> float | None:
-        try:
-            return float(value)
-        except (TypeError, ValueError):
-            return None
-
-    def _resolve_agent_roi(self, decision: dict[str, Any]) -> tuple[float | None, str]:
-        direct_ratio = self._as_float(decision.get("target_profit_ratio"))
-        if direct_ratio is not None:
-            return max(direct_ratio, 0.0), "target_profit_ratio"
-
-        target_rr = self._as_float(decision.get("target_rr"))
-        if target_rr is None:
-            return None, "missing_target_rr"
-
-        stop_reference = self._as_float(decision.get("agent_stoploss"))
-        stop_source = "agent_stoploss"
-        if stop_reference is None:
-            stop_reference = self._as_float(getattr(self, "stoploss", None))
-            stop_source = "strategy_stoploss"
-        if stop_reference is None:
-            return None, "missing_stop_reference"
-
-        roi_value = abs(stop_reference) * target_rr
-        max_ratio = self._as_float(self._overlay.get("max_target_profit_ratio"))
-        if max_ratio is not None:
-            roi_value = min(roi_value, max_ratio)
-        return max(roi_value, 0.0), f"derived_from_{stop_source}_x_target_rr"
+    def _trace(self, filename: str, payload: dict[str, Any]) -> None:
+        self.audit.append_event(filename, payload)
 
     def bot_loop_start(self, current_time, **kwargs):
         self._refresh()
-        self._trace(
-            "bridge_runtime_trace.jsonl",
-            {
-                "shadow_mode": self.shadow_mode,
-                "enabled_callbacks": self.enabled_callbacks,
-                "cache_fresh": self._cache_is_fresh(current_time),
-                "cache_ts_mode": self._cache.get("cache_ts_mode", "source"),
-                "runmode": self._runmode_name(),
-                "pair_count": len(self._cache.get("pairs", {})),
-            },
-            current_time,
-        )
-        return self._call_parent("bot_loop_start", current_time, **kwargs)
+        self._trace("bridge_runtime_trace.jsonl", {
+            "shadow_mode": self.shadow_mode,
+            "enabled_callbacks": self.enabled_callbacks,
+            "cache_fresh": self._cache_is_fresh(),
+            "pair_count": len(self._cache.get("pairs", {})),
+        })
+        parent = getattr(super(), "bot_loop_start", None)
+        return parent(current_time, **kwargs) if callable(parent) else None
 
     def custom_stake_amount(self, pair: str, current_time, current_rate: float, proposed_stake: float, min_stake, max_stake: float, leverage: float, entry_tag, side: str, **kwargs):
-        parent_stake = self._call_parent(
-            "custom_stake_amount",
-            pair,
-            current_time,
-            current_rate,
-            proposed_stake,
-            min_stake,
-            max_stake,
-            leverage,
-            entry_tag,
-            side,
-            **kwargs,
-        )
-        parent_stake_value = self._as_float(parent_stake)
-        base_stake = parent_stake_value if parent_stake_value is not None else proposed_stake
-        decision = self._pair_decision(pair)
-        base = {
-            "pair": pair,
-            "mode": "shadow" if self.shadow_mode else "live",
-            "proposed_stake": proposed_stake,
-            "parent_stake": parent_stake,
-            "base_stake": base_stake,
-            "decision": decision,
-            "cache_fresh": self._cache_is_fresh(current_time),
-            "pair_allowed": self._pair_allowed(pair),
-        }
-        self._trace("stake_decision_trace.jsonl", base, current_time)
+        d = self._pair_decision(pair)
+        base = {"pair": pair, "mode": "shadow" if self.shadow_mode else "live", "proposed_stake": proposed_stake, "decision": d, "cache_fresh": self._cache_is_fresh(), "pair_allowed": self._pair_allowed(pair), "providers_healthy": self._providers_healthy(d)}
+        self._trace("stake_decision_trace.jsonl", base)
 
         if self.shadow_mode or not self.enabled_callbacks.get("stake", False):
-            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "shadow_or_disabled"}, current_time)
-            return base_stake
-        if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
-            return base_stake
+            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "shadow_or_disabled"})
+            return proposed_stake
+        if not self._agent_enabled_for_pair(pair):
+            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            return proposed_stake
 
-        confidence = float(decision.get("confidence", 0.0))
+        confidence = float(d.get("confidence", 0.0))
         min_conf = float(self._overlay.get("min_confidence_for_live", 0.72))
         if confidence < min_conf:
-            self._trace(
-                "stake_fallback_trace.jsonl",
-                {**base, "reason": "confidence_below_threshold", "confidence": confidence},
-                current_time,
-            )
-            return base_stake
+            self._trace("stake_fallback_trace.jsonl", {**base, "reason": "confidence_below_threshold", "confidence": confidence})
+            return proposed_stake
 
-        multiplier = min(
-            float(decision.get("stake_multiplier", 1.0)),
-            float(self._overlay.get("max_stake_multiplier", 1.50)),
-        )
-        stake = base_stake * multiplier
+        multiplier = min(float(self._decision_value(d, "stake.stake_multiplier", "stake_multiplier", 1.0)), float(self._overlay.get("max_stake_multiplier", 1.50)))
+        stake = proposed_stake * multiplier
         if max_stake:
             stake = min(stake, max_stake)
         if min_stake:
             stake = max(stake, min_stake)
 
-        self._trace(
-            "stake_apply_trace.jsonl",
-            {**base, "confidence": confidence, "multiplier": multiplier, "final_stake": stake},
-            current_time,
-        )
+        self._trace("stake_apply_trace.jsonl", {**base, "confidence": confidence, "multiplier": multiplier, "final_stake": stake})
         return max(stake, 0.0)
 
     def custom_exit(self, pair: str, trade, current_time, current_rate: float, current_profit: float, **kwargs):
-        parent_exit = self._call_parent(
-            "custom_exit",
-            pair,
-            trade,
-            current_time,
-            current_rate,
-            current_profit,
-            **kwargs,
-        )
-        decision = self._pair_decision(pair)
+        d = self._pair_decision(pair)
         min_profit = float(self._overlay.get("exit_min_profit_threshold", -0.01))
-        base = {
-            "pair": pair,
-            "mode": "shadow" if self.shadow_mode else "live",
-            "current_profit": current_profit,
-            "min_profit_threshold": min_profit,
-            "decision": decision,
-            "parent_exit": parent_exit,
-        }
-        self._trace("exit_shadow_trace.jsonl", base, current_time)
+        base = {"pair": pair, "mode": "shadow" if self.shadow_mode else "live", "current_profit": current_profit, "min_profit_threshold": min_profit, "decision": d, "providers_healthy": self._providers_healthy(d)}
+        self._trace("exit_shadow_trace.jsonl", base)
 
         if self.shadow_mode or not self.enabled_callbacks.get("exit", False):
-            return parent_exit
-        if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("exit_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
-            return parent_exit
-        if current_profit < min_profit and not bool(decision.get("force_exit_on_loss", False)):
-            self._trace("exit_skip_trace.jsonl", {**base, "reason": "profit_below_threshold"}, current_time)
-            return parent_exit
-        if bool(decision.get("exit_signal", False)):
-            reason = decision.get("exit_reason", "agent_exit_signal")
-            self._trace("exit_apply_trace.jsonl", {**base, "reason": reason}, current_time)
+            return None
+        if not self._agent_enabled_for_pair(pair):
+            self._trace("exit_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            return None
+
+        force_exit_on_loss = bool(self._decision_value(d, "exit.force_exit_on_loss", "force_exit_on_loss", False))
+        if current_profit < min_profit and not force_exit_on_loss:
+            self._trace("exit_skip_trace.jsonl", {**base, "reason": "profit_below_threshold"})
+            return None
+
+        exit_signal = bool(self._decision_value(d, "exit.exit_signal", "exit_signal", False))
+        if exit_signal:
+            reason = self._decision_value(d, "exit.exit_reason", "exit_reason", "agent_exit_signal")
+            self._trace("exit_apply_trace.jsonl", {**base, "reason": reason})
             return reason
-        return parent_exit
+        return None
 
     def custom_stoploss(self, pair: str, trade, current_time, current_rate: float, current_profit: float, after_fill: bool, **kwargs):
-        parent_stoploss = self._call_parent(
-            "custom_stoploss",
-            pair,
-            trade,
-            current_time,
-            current_rate,
-            current_profit,
-            after_fill,
-            **kwargs,
-        )
-        decision = self._pair_decision(pair)
-        base = {
-            "pair": pair,
-            "mode": "shadow" if self.shadow_mode else "live",
-            "current_profit": current_profit,
-            "decision": decision,
-            "parent_stoploss": parent_stoploss,
-        }
-        self._trace("stoploss_shadow_trace.jsonl", base, current_time)
+        d = self._pair_decision(pair)
+        base = {"pair": pair, "mode": "shadow" if self.shadow_mode else "live", "current_profit": current_profit, "decision": d, "providers_healthy": self._providers_healthy(d)}
+        self._trace("stoploss_shadow_trace.jsonl", base)
 
         if self.shadow_mode or not self.enabled_callbacks.get("stoploss", False):
-            return parent_stoploss
-        if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
-            return parent_stoploss
-        if decision.get("stoploss_mode") != "tighten_only":
-            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "mode_not_tighten_only"}, current_time)
-            return parent_stoploss
+            return None
+        if not self._agent_enabled_for_pair(pair):
+            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            return None
 
-        agent_stop = self._as_float(decision.get("agent_stoploss"))
+        mode = self._decision_value(d, "stoploss.stoploss_mode", "stoploss_mode", None)
+        if mode != "tighten_only":
+            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "mode_not_tighten_only"})
+            return None
+
+        agent_stop = self._decision_value(d, "stoploss.agent_stoploss", "agent_stoploss", None)
         if agent_stop is None:
-            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "missing_agent_stop"}, current_time)
-            return parent_stoploss
-
-        parent_stop_value = self._as_float(parent_stoploss)
-        applied_stop = agent_stop if parent_stop_value is None else max(parent_stop_value, agent_stop)
-        self._trace(
-            "stoploss_apply_trace.jsonl",
-            {**base, "agent_stoploss": agent_stop, "applied_stoploss": applied_stop},
-            current_time,
-        )
-        return applied_stop
+            self._trace("stoploss_skip_trace.jsonl", {**base, "reason": "missing_agent_stop"})
+            return None
+        self._trace("stoploss_apply_trace.jsonl", {**base, "applied_stoploss": float(agent_stop)})
+        return float(agent_stop)
 
     def custom_roi(self, pair: str, trade, current_time, trade_duration: int, entry_tag, side: str, **kwargs):
-        parent_roi = self._call_parent(
-            "custom_roi",
-            pair,
-            trade,
-            current_time,
-            trade_duration,
-            entry_tag,
-            side,
-            **kwargs,
-        )
-        parent_roi_value = self._as_float(parent_roi)
-        decision = self._pair_decision(pair)
+        d = self._pair_decision(pair)
         min_duration = int(self._overlay.get("roi_min_trade_duration", 5))
-        base = {
-            "pair": pair,
-            "mode": "shadow" if self.shadow_mode else "live",
-            "trade_duration": trade_duration,
-            "min_trade_duration": min_duration,
-            "decision": decision,
-            "parent_roi": parent_roi,
-        }
-        self._trace("roi_shadow_trace.jsonl", base, current_time)
+        base = {"pair": pair, "mode": "shadow" if self.shadow_mode else "live", "trade_duration": trade_duration, "min_trade_duration": min_duration, "decision": d, "providers_healthy": self._providers_healthy(d)}
+        self._trace("roi_shadow_trace.jsonl", base)
 
         if self.shadow_mode or not self.enabled_callbacks.get("roi", False):
-            return parent_roi_value
-        if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("roi_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
-            return parent_roi_value
+            return None
+        if not self._agent_enabled_for_pair(pair):
+            self._trace("roi_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            return None
         if trade_duration < min_duration:
-            self._trace("roi_skip_trace.jsonl", {**base, "reason": "duration_below_threshold"}, current_time)
-            return parent_roi_value
+            self._trace("roi_skip_trace.jsonl", {**base, "reason": "duration_below_threshold"})
+            return None
 
-        agent_roi, roi_source = self._resolve_agent_roi(decision)
-        if agent_roi is None:
-            self._trace("roi_skip_trace.jsonl", {**base, "reason": roi_source}, current_time)
-            return parent_roi_value
-
-        applied_roi = agent_roi if parent_roi_value is None else min(parent_roi_value, agent_roi)
-        self._trace(
-            "roi_apply_trace.jsonl",
-            {**base, "agent_roi": agent_roi, "roi_value": applied_roi, "roi_source": roi_source},
-            current_time,
-        )
-        return applied_roi
+        target_rr = self._decision_value(d, "roi.target_rr", "target_rr", None)
+        if target_rr is None:
+            self._trace("roi_skip_trace.jsonl", {**base, "reason": "missing_target_rr"})
+            return None
+        roi_value = float(target_rr)
+        self._trace("roi_apply_trace.jsonl", {**base, "roi_value": roi_value})
+        return roi_value
 
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float, rate: float, time_in_force: str, current_time, entry_tag, side: str, **kwargs) -> bool:
-        parent_entry = self._call_parent(
-            "confirm_trade_entry",
-            pair,
-            order_type,
-            amount,
-            rate,
-            time_in_force,
-            current_time,
-            entry_tag,
-            side,
-            **kwargs,
-        )
-        parent_allowed = True if parent_entry is None else bool(parent_entry)
-        decision = self._pair_decision(pair)
-        base = {
-            "pair": pair,
-            "mode": "shadow" if self.shadow_mode else "live",
-            "amount": amount,
-            "rate": rate,
-            "entry_tag": entry_tag,
-            "decision": decision,
-            "parent_entry_allowed": parent_allowed,
-        }
-        self._trace("entry_confirm_trace.jsonl", base, current_time)
+        d = self._pair_decision(pair)
+        base = {"pair": pair, "mode": "shadow" if self.shadow_mode else "live", "amount": amount, "rate": rate, "entry_tag": entry_tag, "decision": d, "providers_healthy": self._providers_healthy(d)}
+        self._trace("entry_confirm_trace.jsonl", base)
 
-        if not parent_allowed:
-            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "parent_blocked"}, current_time)
-            return False
         if self.shadow_mode or not self.enabled_callbacks.get("entry_confirm", False):
-            return parent_allowed
-        if not self._agent_enabled_for_pair(pair, current_time):
-            self._trace("entry_confirm_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"}, current_time)
-            return parent_allowed
+            return True
+        if not self._agent_enabled_for_pair(pair):
+            self._trace("entry_confirm_skip_trace.jsonl", {**base, "reason": "agent_not_enabled"})
+            return True
 
-        confidence = float(decision.get("confidence", 0.0))
-        min_conf = float(self._overlay.get("entry_min_confidence", 0.75))
-        if confidence < min_conf:
-            self._trace(
-                "entry_confirm_block_trace.jsonl",
-                {**base, "reason": "confidence_below_threshold", "confidence": confidence},
-                current_time,
-            )
-            return False
-        if not bool(decision.get("entry_allowed", True)):
-            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "entry_allowed_false"}, current_time)
+        confidence = float(d.get("confidence", 0.0))
+        min_conf = float(self._decision_value(d, "entry.entry_min_confidence", "entry_min_confidence", self._overlay.get("entry_min_confidence", 0.75)))
+        if confidence < float(min_conf):
+            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "confidence_below_threshold", "confidence": confidence})
             return False
 
-        self._trace("entry_confirm_apply_trace.jsonl", {**base, "applied": True}, current_time)
-        return parent_allowed
+        entry_allowed = bool(self._decision_value(d, "entry.entry_allowed", "entry_allowed", True))
+        if not entry_allowed:
+            self._trace("entry_confirm_block_trace.jsonl", {**base, "reason": "entry_allowed_false"})
+            return False
+
+        self._trace("entry_confirm_apply_trace.jsonl", {**base, "applied": True})
+        return True
