@@ -1,0 +1,24 @@
+{
+  "global_defaults": {
+    "max_provider_latency_ms": 1200,
+    "max_score_drift": 0.45,
+    "block_on_high_latency": false,
+    "block_on_high_drift": true,
+    "block_on_risk_flags": ["high_slippage_risk"]
+  },
+  "pair_overrides": {
+    "BTC/USDT": {
+      "max_provider_latency_ms": 900,
+      "max_score_drift": 0.35
+    },
+    "ETH/USDT": {
+      "max_provider_latency_ms": 1200,
+      "max_score_drift": 0.40
+    },
+    "SOL/USDT": {
+      "max_provider_latency_ms": 800,
+      "max_score_drift": 0.25,
+      "block_on_high_latency": true
+    }
+  }
+}

@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List
 from agent_service.providers.provider_base import ProviderSnapshot
 from agent_service.aggregator.confidence_policy import ConfidencePolicy
 from agent_service.aggregator.execution_policy import ExecutionPolicy
+from agent_service.aggregator.anomaly_guard import AnomalyGuard
 
 
 def utc_now_iso() -> str:
@@ -21,11 +22,13 @@ class DecisionAggregator:
         shadow_mode: bool = True,
         confidence_policy: dict | None = None,
         execution_policy: dict | None = None,
+        anomaly_policy: dict | None = None,
     ) -> None:
         self.cache_ttl_seconds = cache_ttl_seconds
         self.shadow_mode = shadow_mode
         self.policy = ConfidencePolicy(confidence_policy or {})
         self.execution_policy = ExecutionPolicy(execution_policy or {})
+        self.anomaly_guard = AnomalyGuard(anomaly_policy or {})
 
     def _weighted_scores(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> List[float]:
         cfg = self.policy.config_for_pair(pair)
@@ -73,6 +76,8 @@ class DecisionAggregator:
                 "ts": s.ts,
                 "stale": s.stale,
                 "weight": self.policy.weight_for_provider(s.provider),
+                "latency_ms": s.latency_ms,
+                "risk_flags": s.risk_flags,
             }
             for s in snapshots
         }
@@ -93,6 +98,7 @@ class DecisionAggregator:
         cfg = self.policy.config_for_pair(pair)
         callback_policy = self.execution_policy.callback_policy(pair)
         provider_gate = self._provider_gate(pair, snapshots)
+        anomaly = self.anomaly_guard.check_pair(pair, snapshots)
 
         confidence = self._confidence_from_snapshots(snapshots, pair)
         risk_score = self._risk_score_from_snapshots(snapshots, pair)
@@ -102,6 +108,7 @@ class DecisionAggregator:
         max_risk_score = float(cfg.get("max_risk_score", 0.40))
         entry_allowed = (
             provider_gate["provider_gate_passed"]
+            and not anomaly["blocking"]
             and confidence >= entry_min_confidence
             and risk_score <= max_risk_score
         )
@@ -123,20 +130,18 @@ class DecisionAggregator:
         providers = self._provider_summary(snapshots)
 
         return {
-            "agent_enabled": provider_gate["provider_gate_passed"],
+            "agent_enabled": provider_gate["provider_gate_passed"] and not anomaly["blocking"],
             "pair_enabled": True,
             "governance_gate": "passed",
             "market_regime": regime,
             "confidence": confidence,
             "risk_score": risk_score,
             "providers": providers,
-            "execution_policy": {
-                **callback_policy,
-                **provider_gate,
-            },
+            "execution_policy": {**callback_policy, **provider_gate},
+            "anomaly_guard": anomaly,
             "entry": {
                 "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
-                "entry_reason": "provider_weighted_alignment" if entry_allowed else "provider_or_confidence_or_risk_blocked",
+                "entry_reason": "provider_weighted_alignment" if entry_allowed else "provider_or_anomaly_or_confidence_or_risk_blocked",
                 "entry_min_confidence": entry_min_confidence,
             },
             "stake": {
@@ -164,6 +169,7 @@ class DecisionAggregator:
                 "evidence_refs": [f"{s.provider}:{pair}" for s in snapshots],
                 "policy_snapshot": cfg,
                 "execution_snapshot": callback_policy,
+                "anomaly_snapshot": anomaly,
             },
             "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
             "stake_multiplier": stake_multiplier if callback_policy["stake"] else 1.0,

@@ -6,6 +6,7 @@ from typing import Dict, List
 
 from agent_service.aggregator.decision_aggregator import DecisionAggregator
 from agent_service.aggregator.provider_health_report import write_provider_health_report
+from agent_service.aggregator.observability_report import write_observability_report
 from agent_service.providers.provider_base import ProviderSnapshot, SkillProvider
 from agent_service.providers.provider_registry import build_default_provider_registry, build_pair_provider_map
 
@@ -13,6 +14,7 @@ DEFAULT_PAIRS = ["BTC/USDT", "ETH/USDT"]
 ROLLOUT_CONFIG_PATH = "user_data/config/provider_rollout.json"
 CONFIDENCE_POLICY_PATH = "user_data/config/confidence_policy.json"
 EXECUTION_POLICY_PATH = "user_data/config/execution_policy.json"
+ANOMALY_POLICY_PATH = "user_data/config/anomaly_policy.json"
 
 
 def load_json(path: str, default: dict) -> dict:
@@ -76,6 +78,22 @@ def load_execution_policy(path: str = EXECUTION_POLICY_PATH) -> dict:
     )
 
 
+def load_anomaly_policy(path: str = ANOMALY_POLICY_PATH) -> dict:
+    return load_json(
+        path,
+        {
+            "global_defaults": {
+                "max_provider_latency_ms": 1200,
+                "max_score_drift": 0.45,
+                "block_on_high_latency": False,
+                "block_on_high_drift": True,
+                "block_on_risk_flags": ["high_slippage_risk"]
+            },
+            "pair_overrides": {}
+        },
+    )
+
+
 def collect_pair_snapshots(pair_provider_map: Dict[str, List[SkillProvider]]) -> Dict[str, List[ProviderSnapshot]]:
     pair_snapshots: Dict[str, List[ProviderSnapshot]] = {}
     for pair, providers in pair_provider_map.items():
@@ -100,21 +118,25 @@ def main():
     rollout_config = load_rollout_config()
     confidence_policy = load_confidence_policy()
     execution_policy = load_execution_policy()
+    anomaly_policy = load_anomaly_policy()
 
     providers = build_default_provider_registry()
     write_provider_health_report(providers)
     write_json_report({"confidence_policy": confidence_policy}, "agent_service/reports/confidence_policy_report.json")
     write_json_report({"execution_policy": execution_policy}, "agent_service/reports/execution_policy_report.json")
+    write_json_report({"anomaly_policy": anomaly_policy}, "agent_service/reports/anomaly_policy_report.json")
 
     pairs = rollout_config.get("enabled_pairs", DEFAULT_PAIRS)
     pair_provider_map = build_pair_provider_map(pairs, rollout_config=rollout_config)
     pair_snapshots = collect_pair_snapshots(pair_provider_map)
+    write_observability_report(pair_snapshots)
 
     aggregator = DecisionAggregator(
         cache_ttl_seconds=90,
         shadow_mode=True,
         confidence_policy=confidence_policy,
         execution_policy=execution_policy,
+        anomaly_policy=anomaly_policy,
     )
     out = aggregator.write_decision_cache(pair_snapshots)
     print(out)
