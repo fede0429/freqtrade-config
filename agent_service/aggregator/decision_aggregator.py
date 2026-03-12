@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List
 
 from agent_service.providers.provider_base import ProviderSnapshot
 from agent_service.aggregator.confidence_policy import ConfidencePolicy
+from agent_service.aggregator.execution_policy import ExecutionPolicy
 
 
 def utc_now_iso() -> str:
@@ -19,10 +20,12 @@ class DecisionAggregator:
         cache_ttl_seconds: int = 90,
         shadow_mode: bool = True,
         confidence_policy: dict | None = None,
+        execution_policy: dict | None = None,
     ) -> None:
         self.cache_ttl_seconds = cache_ttl_seconds
         self.shadow_mode = shadow_mode
         self.policy = ConfidencePolicy(confidence_policy or {})
+        self.execution_policy = ExecutionPolicy(execution_policy or {})
 
     def _weighted_scores(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> List[float]:
         cfg = self.policy.config_for_pair(pair)
@@ -62,15 +65,46 @@ class DecisionAggregator:
                 return "downtrend"
         return "range"
 
+    def _provider_summary(self, snapshots: List[ProviderSnapshot]) -> dict:
+        return {
+            s.provider: {
+                "status": s.status,
+                "score": s.score,
+                "ts": s.ts,
+                "stale": s.stale,
+                "weight": self.policy.weight_for_provider(s.provider),
+            }
+            for s in snapshots
+        }
+
+    def _provider_gate(self, pair: str, snapshots: List[ProviderSnapshot]) -> dict:
+        cfg = self.execution_policy.config_for_pair(pair)
+        min_provider_count = int(cfg.get("min_provider_count", 1))
+        available = len(snapshots)
+        provider_gate_passed = available >= min_provider_count
+        return {
+            "provider_gate_passed": provider_gate_passed,
+            "available_provider_count": available,
+            "min_provider_count": min_provider_count,
+            "fallback_mode": cfg.get("fallback_mode", "base_strategy_only"),
+        }
+
     def build_pair_decision(self, pair: str, snapshots: List[ProviderSnapshot]) -> Dict[str, Any]:
         cfg = self.policy.config_for_pair(pair)
+        callback_policy = self.execution_policy.callback_policy(pair)
+        provider_gate = self._provider_gate(pair, snapshots)
+
         confidence = self._confidence_from_snapshots(snapshots, pair)
         risk_score = self._risk_score_from_snapshots(snapshots, pair)
         regime = self._market_regime(snapshots)
 
         entry_min_confidence = float(cfg.get("entry_min_confidence", 0.75))
         max_risk_score = float(cfg.get("max_risk_score", 0.40))
-        entry_allowed = confidence >= entry_min_confidence and risk_score <= max_risk_score
+        entry_allowed = (
+            provider_gate["provider_gate_passed"]
+            and confidence >= entry_min_confidence
+            and risk_score <= max_risk_score
+        )
 
         stake_multiplier = 1.0
         if confidence >= max(entry_min_confidence + 0.05, 0.80) and regime == "trend":
@@ -86,60 +120,58 @@ class DecisionAggregator:
         if confidence >= max(entry_min_confidence + 0.05, 0.80):
             agent_stoploss = float(cfg.get("high_conf_agent_stoploss", -0.035))
 
-        providers = {
-            s.provider: {
-                "status": s.status,
-                "score": s.score,
-                "ts": s.ts,
-                "stale": s.stale,
-                "weight": self.policy.weight_for_provider(s.provider),
-            }
-            for s in snapshots
-        }
+        providers = self._provider_summary(snapshots)
 
         return {
-            "agent_enabled": True,
+            "agent_enabled": provider_gate["provider_gate_passed"],
             "pair_enabled": True,
             "governance_gate": "passed",
             "market_regime": regime,
             "confidence": confidence,
             "risk_score": risk_score,
             "providers": providers,
+            "execution_policy": {
+                **callback_policy,
+                **provider_gate,
+            },
             "entry": {
-                "entry_allowed": entry_allowed,
-                "entry_reason": "weighted_multi_skill_alignment" if entry_allowed else "confidence_or_risk_blocked",
+                "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
+                "entry_reason": "provider_weighted_alignment" if entry_allowed else "provider_or_confidence_or_risk_blocked",
                 "entry_min_confidence": entry_min_confidence,
             },
             "stake": {
-                "stake_multiplier": stake_multiplier,
+                "stake_multiplier": stake_multiplier if callback_policy["stake"] else 1.0,
                 "stake_cap_ratio": float(cfg.get("stake_cap_ratio", 0.12)),
-                "stake_reason": "weighted_provider_signal",
+                "stake_reason": "weighted_provider_signal" if callback_policy["stake"] else "stake_disabled_by_execution_policy",
             },
             "exit": {
                 "exit_signal": False,
                 "exit_reason": None,
                 "force_exit_on_loss": False,
+                "callback_enabled": callback_policy["exit"],
             },
             "stoploss": {
-                "stoploss_mode": "tighten_only",
-                "agent_stoploss": agent_stoploss,
+                "stoploss_mode": "tighten_only" if callback_policy["stoploss"] else "disabled",
+                "agent_stoploss": agent_stoploss if callback_policy["stoploss"] else None,
             },
             "roi": {
-                "target_rr": target_rr,
+                "target_rr": target_rr if callback_policy["roi"] else None,
                 "roi_min_trade_duration": int(cfg.get("roi_min_trade_duration", 5)),
+                "callback_enabled": callback_policy["roi"],
             },
             "trace": {
                 "decision_id": f"dec_{pair.replace('/', '_').lower()}_{utc_now_iso().replace(':', '').replace('-', '')}",
                 "evidence_refs": [f"{s.provider}:{pair}" for s in snapshots],
                 "policy_snapshot": cfg,
+                "execution_snapshot": callback_policy,
             },
-            "entry_allowed": entry_allowed,
-            "stake_multiplier": stake_multiplier,
+            "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
+            "stake_multiplier": stake_multiplier if callback_policy["stake"] else 1.0,
             "exit_signal": False,
             "exit_reason": None,
-            "stoploss_mode": "tighten_only",
-            "agent_stoploss": agent_stoploss,
-            "target_rr": target_rr,
+            "stoploss_mode": "tighten_only" if callback_policy["stoploss"] else "disabled",
+            "agent_stoploss": agent_stoploss if callback_policy["stoploss"] else None,
+            "target_rr": target_rr if callback_policy["roi"] else None,
         }
 
     def build_decision_cache(self, pair_snapshots: Dict[str, List[ProviderSnapshot]]) -> Dict[str, Any]:
