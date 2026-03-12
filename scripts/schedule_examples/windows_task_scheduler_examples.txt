@@ -1,0 +1,17 @@
+Windows Task Scheduler examples
+
+1. Smoke Test
+- Trigger: repeat every 15 minutes
+- Action: python agent_service/integration/run_live_ingest_smoke_test.py
+
+2. Shadow Cycle
+- Trigger: repeat every 2 hours
+- Action: python agent_service/ops/run_periodic_shadow_cycle.py
+
+3. Daily Ops Summary
+- Trigger: daily at 23:15
+- Action: python agent_service/ops/build_daily_ops_summary.py
+
+4. Weekly Ops Summary
+- Trigger: weekly on Sunday at 23:30
+- Action: python agent_service/ops/build_weekly_ops_summary.py

@@ -1,0 +1,6 @@
+{
+  "baseline_path": "agent_service/reports/shadow_compare_baseline.json",
+  "decision_cache_path": "user_data/agent_runtime/state/decision_cache.json",
+  "calibration_report_path": "agent_service/reports/calibration_report.json",
+  "top_candidate_limit": 10
+}

@@ -1,1 +1,11 @@
-{"enabled_pairs":["BTC/USDT","ETH/USDT","SOL/USDT"],"provider_defaults":{"tradingview_mcp":true,"dexpaprika":true},"pair_provider_overrides":{}}
+{
+  "enabled_pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+  "provider_defaults": {"tradingview_mcp": true, "dexpaprika": true},
+  "required_provider_names": ["tradingview_mcp"],
+  "rollout_stage": "pair_provider_enablement_v1",
+  "pair_provider_overrides": {
+    "BTC/USDT": {"required_providers": ["tradingview_mcp", "dexpaprika"], "rollout_stage": "full_readonly_pair", "forced_providers": ["dexpaprika"]},
+    "ETH/USDT": {"required_providers": ["tradingview_mcp"], "rollout_stage": "technical_only_pair", "disabled_providers": ["dexpaprika"]},
+    "SOL/USDT": {"required_providers": ["tradingview_mcp"], "rollout_stage": "candidate_pair_shadow", "disabled_providers": []}
+  }
+}

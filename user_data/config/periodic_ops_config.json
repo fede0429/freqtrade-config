@@ -1,0 +1,7 @@
+{
+  "mode": "shadow",
+  "run_daily_summary": true,
+  "run_weekly_summary": true,
+  "append_run_history": true,
+  "shadow_cycle_enabled": true
+}

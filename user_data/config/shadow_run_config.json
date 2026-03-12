@@ -1,0 +1,11 @@
+{
+  "mode": "shadow",
+  "enable_live_ingest_smoke_test": true,
+  "enable_source_fetch_report": true,
+  "enable_news_pipeline": true,
+  "enable_governance_overlay": true,
+  "enable_review_pack": true,
+  "enable_quality_pack": true,
+  "enable_calibration": true,
+  "enable_shadow_compare_baseline": true
+}

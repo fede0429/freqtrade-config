@@ -13,8 +13,3 @@
 - news governance overlay
 - news review / ops handoff
 - news quality / health metrics
-
-## 推荐使用方式
-- 以后以这份收口包为 news 主参考
-- 旧的 news 相关增量包可不再单独维护
-- 后续如需整合进总快照，建议做 `current_full_snapshot_v2`

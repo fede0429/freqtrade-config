@@ -1,0 +1,10 @@
+{
+  "profile": "standard_shadow",
+  "timezone": "Europe/Rome",
+  "jobs": {
+    "smoke_test": {"enabled": true, "interval_minutes": 15},
+    "shadow_cycle": {"enabled": true, "interval_minutes": 120},
+    "daily_summary": {"enabled": true, "hour": 23, "minute": 15},
+    "weekly_summary": {"enabled": true, "weekday": "sunday", "hour": 23, "minute": 30}
+  }
+}

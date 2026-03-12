@@ -1,0 +1,6 @@
+# Linux / macOS cron examples
+
+*/15 * * * * cd /path/to/project && python agent_service/integration/run_live_ingest_smoke_test.py >> logs/smoke_test.log 2>&1
+0 */2 * * * cd /path/to/project && python agent_service/ops/run_periodic_shadow_cycle.py >> logs/shadow_cycle.log 2>&1
+15 23 * * * cd /path/to/project && python agent_service/ops/build_daily_ops_summary.py >> logs/daily_ops.log 2>&1
+30 23 * * 0 cd /path/to/project && python agent_service/ops/build_weekly_ops_summary.py >> logs/weekly_ops.log 2>&1

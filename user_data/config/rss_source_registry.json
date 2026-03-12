@@ -1,0 +1,7 @@
+{
+  "sources": [
+    {"source_name": "sec_press_releases", "url": "", "source_tier": "official", "enabled": false},
+    {"source_name": "federal_reserve_press_releases", "url": "", "source_tier": "official", "enabled": false},
+    {"source_name": "coindesk_rss", "url": "", "source_tier": "media", "enabled": false}
+  ]
+}

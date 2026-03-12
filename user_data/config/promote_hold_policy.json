@@ -1,0 +1,7 @@
+{
+  "promote_min_confidence": 0.80,
+  "watch_min_confidence": 0.75,
+  "require_governance_passed": true,
+  "hold_on_pair_drift": true,
+  "review_on_news_governance": true
+}
