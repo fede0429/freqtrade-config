@@ -1,0 +1,2 @@
+{"ts": "2026-03-11T16:49:55.401808+00:00", "pair": "BTC/USDT", "mode": "shadow", "proposed_stake": 100.0, "decision": {"agent_enabled": true, "confidence": 0.78, "stake_multiplier": 1.35, "entry_allowed": true, "exit_signal": false, "exit_reason": null, "stoploss_mode": "tighten_only", "agent_stoploss": -0.04, "target_rr": 2.8, "governance_gate": "passed"}, "cache_fresh": false, "pair_allowed": true}
+{"ts": "2026-03-11T16:49:55.403339+00:00", "pair": "ETH/USDT", "mode": "shadow", "proposed_stake": 100.0, "decision": {}, "cache_fresh": false, "pair_allowed": true}
