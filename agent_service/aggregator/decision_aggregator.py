@@ -9,6 +9,7 @@ from agent_service.providers.provider_base import ProviderSnapshot
 from agent_service.aggregator.confidence_policy import ConfidencePolicy
 from agent_service.aggregator.execution_policy import ExecutionPolicy
 from agent_service.aggregator.anomaly_guard import AnomalyGuard
+from agent_service.aggregator.cooldown_guard import CooldownGuard
 
 
 def utc_now_iso() -> str:
@@ -23,12 +24,14 @@ class DecisionAggregator:
         confidence_policy: dict | None = None,
         execution_policy: dict | None = None,
         anomaly_policy: dict | None = None,
+        cooldown_policy: dict | None = None,
     ) -> None:
         self.cache_ttl_seconds = cache_ttl_seconds
         self.shadow_mode = shadow_mode
         self.policy = ConfidencePolicy(confidence_policy or {})
         self.execution_policy = ExecutionPolicy(execution_policy or {})
         self.anomaly_guard = AnomalyGuard(anomaly_policy or {})
+        self.cooldown_guard = CooldownGuard(cooldown_policy or {})
 
     def _weighted_scores(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> List[float]:
         cfg = self.policy.config_for_pair(pair)
@@ -99,6 +102,11 @@ class DecisionAggregator:
         callback_policy = self.execution_policy.callback_policy(pair)
         provider_gate = self._provider_gate(pair, snapshots)
         anomaly = self.anomaly_guard.check_pair(pair, snapshots)
+        cooldown = self.cooldown_guard.maybe_enter_cooldown(
+            pair,
+            anomaly_blocking=bool(anomaly["blocking"]),
+            provider_gate_passed=bool(provider_gate["provider_gate_passed"]),
+        )
 
         confidence = self._confidence_from_snapshots(snapshots, pair)
         risk_score = self._risk_score_from_snapshots(snapshots, pair)
@@ -106,18 +114,20 @@ class DecisionAggregator:
 
         entry_min_confidence = float(cfg.get("entry_min_confidence", 0.75))
         max_risk_score = float(cfg.get("max_risk_score", 0.40))
-        entry_allowed = (
+        entry_allowed_raw = (
             provider_gate["provider_gate_passed"]
             and not anomaly["blocking"]
             and confidence >= entry_min_confidence
             and risk_score <= max_risk_score
         )
+        entry_allowed = self.cooldown_guard.apply_entry_policy(pair, entry_allowed_raw)
 
         stake_multiplier = 1.0
         if confidence >= max(entry_min_confidence + 0.05, 0.80) and regime == "trend":
             stake_multiplier = float(cfg.get("trend_high_conf_stake_multiplier", 1.35))
         elif confidence >= entry_min_confidence:
             stake_multiplier = float(cfg.get("base_live_stake_multiplier", 1.15))
+        stake_multiplier = self.cooldown_guard.apply_stake_multiplier_cap(pair, stake_multiplier)
 
         target_rr = float(cfg.get("base_target_rr", 1.8))
         if regime == "trend":
@@ -139,9 +149,10 @@ class DecisionAggregator:
             "providers": providers,
             "execution_policy": {**callback_policy, **provider_gate},
             "anomaly_guard": anomaly,
+            "cooldown_guard": cooldown,
             "entry": {
                 "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
-                "entry_reason": "provider_weighted_alignment" if entry_allowed else "provider_or_anomaly_or_confidence_or_risk_blocked",
+                "entry_reason": "provider_weighted_alignment" if entry_allowed else "provider_or_anomaly_or_confidence_or_risk_or_cooldown_blocked",
                 "entry_min_confidence": entry_min_confidence,
             },
             "stake": {
@@ -170,6 +181,7 @@ class DecisionAggregator:
                 "policy_snapshot": cfg,
                 "execution_snapshot": callback_policy,
                 "anomaly_snapshot": anomaly,
+                "cooldown_snapshot": cooldown,
             },
             "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
             "stake_multiplier": stake_multiplier if callback_policy["stake"] else 1.0,
