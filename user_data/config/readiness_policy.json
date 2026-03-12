@@ -1,14 +1,1 @@
-{
-  "global_defaults": {
-    "min_readiness_score": 3,
-    "require_governance_approved": true,
-    "require_rollout_not_frozen": true,
-    "require_provider_gate_passed": true,
-    "require_no_blocking_anomaly": true
-  },
-  "pair_overrides": {
-    "BTC/USDT": {"min_readiness_score": 4},
-    "ETH/USDT": {"min_readiness_score": 3},
-    "SOL/USDT": {"min_readiness_score": 4, "require_rollout_not_frozen": true}
-  }
-}
+{}

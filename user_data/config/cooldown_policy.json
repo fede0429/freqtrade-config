@@ -1,13 +1,1 @@
-{
-  "global_defaults": {
-    "cooldown_minutes_on_blocking_anomaly": 45,
-    "cooldown_minutes_on_provider_gate_fail": 20,
-    "cooldown_entry_block": true,
-    "cooldown_stake_multiplier_cap": 1.0
-  },
-  "pair_overrides": {
-    "BTC/USDT": {"cooldown_minutes_on_blocking_anomaly": 60, "cooldown_minutes_on_provider_gate_fail": 30, "cooldown_stake_multiplier_cap": 1.0},
-    "ETH/USDT": {"cooldown_minutes_on_blocking_anomaly": 40, "cooldown_minutes_on_provider_gate_fail": 20, "cooldown_stake_multiplier_cap": 1.0},
-    "SOL/USDT": {"cooldown_minutes_on_blocking_anomaly": 90, "cooldown_minutes_on_provider_gate_fail": 45, "cooldown_stake_multiplier_cap": 0.9}
-  }
-}
+{}
