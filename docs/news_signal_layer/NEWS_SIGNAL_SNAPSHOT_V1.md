@@ -1,20 +1,20 @@
 # News Signal Snapshot v1
 
-这是 news 模块第一份**收口包**，用于把当前 news / sovereign signal 主线整理成统一基线。
+这是 news 主线的第一份收口版。
 
-## 已收口内容
+## 已收口能力
 - source registry / trust / weight policy
 - llm client
 - official / exchange status / media / social / fallback providers
-- event normalizer / deduper
+- event normalize / dedupe
 - event -> snapshot mapper
 - news rollout config
 - news 接入 decision cache 生成链
 - news governance overlay
 - news review / ops handoff
 - news quality / health metrics
-- 推荐配置与文档
 
-## 定位
-这不是增量包。
-这是当前 news 主线的**统一快照版**。
+## 推荐使用方式
+- 以后以这份收口包为 news 主参考
+- 旧的 news 相关增量包可不再单独维护
+- 后续如需整合进总快照，建议做 `current_full_snapshot_v2`

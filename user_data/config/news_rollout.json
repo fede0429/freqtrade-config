@@ -1,0 +1,10 @@
+{
+  "enabled_pairs": ["BTC/USDT", "ETH/USDT", "SOL/USDT"],
+  "enabled_source_tiers": ["official", "exchange_status", "media", "social"],
+  "max_events_per_pair": 8,
+  "pair_overrides": {
+    "BTC/USDT": {"enabled_source_tiers": ["official", "exchange_status", "media", "social"], "max_events_per_pair": 10},
+    "ETH/USDT": {"enabled_source_tiers": ["official", "exchange_status", "media"], "max_events_per_pair": 6},
+    "SOL/USDT": {"enabled_source_tiers": ["official", "media", "social"], "max_events_per_pair": 5}
+  }
+}

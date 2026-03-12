@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0",
+  "tiers": {
+    "tier_a_official_macro_regulatory": [
+      {
+        "source_name": "sec_press_releases",
+        "source_type": "rss",
+        "category": "regulatory",
+        "priority": 100,
+        "enabled": true,
+        "notes": "监管官方源"
+      },
+      {
+        "source_name": "federal_reserve_press_releases",
+        "source_type": "rss",
+        "category": "macro",
+        "priority": 100,
+        "enabled": true,
+        "notes": "宏观官方源"
+      }
+    ],
+    "tier_b_exchange_infra": [
+      {
+        "source_name": "coinbase_exchange_status",
+        "source_type": "status_feed",
+        "category": "exchange_status",
+        "priority": 95,
+        "enabled": true,
+        "notes": "交易基础设施状态源"
+      },
+      {
+        "source_name": "coinbase_international_status",
+        "source_type": "status_feed",
+        "category": "exchange_status",
+        "priority": 95,
+        "enabled": true,
+        "notes": "国际站状态源"
+      }
+    ],
+    "tier_c_project_official": [
+      {
+        "source_name": "project_official_blog",
+        "source_type": "rss_or_html",
+        "category": "project_official",
+        "priority": 85,
+        "enabled": false,
+        "notes": "按项目逐个启用"
+      },
+      {
+        "source_name": "github_releases",
+        "source_type": "api",
+        "category": "project_official",
+        "priority": 88,
+        "enabled": false,
+        "notes": "项目发行说明"
+      }
+    ],
+    "tier_d_media": [
+      {
+        "source_name": "coindesk_rss",
+        "source_type": "rss",
+        "category": "media",
+        "priority": 70,
+        "enabled": true,
+        "notes": "专业媒体解释层"
+      }
+    ],
+    "tier_e_social": [
+      {
+        "source_name": "x_api_v2",
+        "source_type": "api",
+        "category": "social",
+        "priority": 45,
+        "enabled": true,
+        "notes": "情绪与预警"
+      },
+      {
+        "source_name": "reddit_api",
+        "source_type": "api",
+        "category": "social",
+        "priority": 40,
+        "enabled": true,
+        "notes": "社区热度与主题漂移"
+      }
+    ],
+    "tier_f_crawler_fallback": [
+      {
+        "source_name": "crawler_fallback",
+        "source_type": "crawler",
+        "category": "fallback",
+        "priority": 20,
+        "enabled": false,
+        "notes": "仅补洞，不作主信号"
+      }
+    ]
+  }
+}

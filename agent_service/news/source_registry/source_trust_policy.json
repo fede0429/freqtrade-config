@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "trust_order_high_to_low": [
+    "regulatory_official",
+    "macro_official",
+    "exchange_status",
+    "project_official",
+    "professional_media",
+    "social",
+    "crawler_fallback"
+  ],
+  "arbitration_rules": {
+    "if_official_confirms_event": "promote_to_high_confidence",
+    "if_only_social_mentions_event": "review_only",
+    "if_status_feed_incident": "allow_execution_policy_override",
+    "if_media_and_social_conflict": "hold_until_official_or_second_media_confirmation"
+  }
+}

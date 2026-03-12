@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "defaults": {
+    "official": {
+      "credibility_weight": 1.0,
+      "execution_impact_weight": 1.0,
+      "sentiment_weight": 0.6
+    },
+    "exchange_status": {
+      "credibility_weight": 1.0,
+      "execution_impact_weight": 1.0,
+      "sentiment_weight": 0.2
+    },
+    "project_official": {
+      "credibility_weight": 0.9,
+      "execution_impact_weight": 0.8,
+      "sentiment_weight": 0.5
+    },
+    "media": {
+      "credibility_weight": 0.75,
+      "execution_impact_weight": 0.55,
+      "sentiment_weight": 0.6
+    },
+    "social": {
+      "credibility_weight": 0.45,
+      "execution_impact_weight": 0.25,
+      "sentiment_weight": 0.9
+    },
+    "fallback": {
+      "credibility_weight": 0.25,
+      "execution_impact_weight": 0.1,
+      "sentiment_weight": 0.3
+    }
+  },
+  "rules": {
+    "social_needs_confirmation_for_trade_trigger": true,
+    "fallback_never_directly_triggers_trade": true,
+    "official_overrides_media_on_conflict": true,
+    "exchange_status_can_freeze_execution": true
+  }
+}

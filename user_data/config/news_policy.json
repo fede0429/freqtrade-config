@@ -1,0 +1,15 @@
+{
+  "global_defaults": {
+    "high_priority_event_types": ["regulatory_action", "exchange_incident", "macro_official_update"],
+    "block_on_event_types": ["exchange_incident"],
+    "review_on_event_types": ["regulatory_action", "fallback_event", "social_buzz"],
+    "minimum_credibility_for_action": 0.70,
+    "escalate_on_exchange_status": true,
+    "escalate_on_regulatory": true
+  },
+  "pair_overrides": {
+    "BTC/USDT": {"minimum_credibility_for_action": 0.75},
+    "ETH/USDT": {"review_on_event_types": ["regulatory_action", "social_buzz"]},
+    "SOL/USDT": {"minimum_credibility_for_action": 0.80, "review_on_event_types": ["regulatory_action", "social_buzz", "fallback_event"]}
+  }
+}
