@@ -10,6 +10,7 @@ from agent_service.aggregator.confidence_policy import ConfidencePolicy
 from agent_service.aggregator.execution_policy import ExecutionPolicy
 from agent_service.aggregator.anomaly_guard import AnomalyGuard
 from agent_service.aggregator.cooldown_guard import CooldownGuard
+from agent_service.aggregator.governance_gatekeeper import GovernanceGatekeeper
 
 
 def utc_now_iso() -> str:
@@ -25,6 +26,7 @@ class DecisionAggregator:
         execution_policy: dict | None = None,
         anomaly_policy: dict | None = None,
         cooldown_policy: dict | None = None,
+        governance_policy: dict | None = None,
     ) -> None:
         self.cache_ttl_seconds = cache_ttl_seconds
         self.shadow_mode = shadow_mode
@@ -32,6 +34,7 @@ class DecisionAggregator:
         self.execution_policy = ExecutionPolicy(execution_policy or {})
         self.anomaly_guard = AnomalyGuard(anomaly_policy or {})
         self.cooldown_guard = CooldownGuard(cooldown_policy or {})
+        self.governance_gatekeeper = GovernanceGatekeeper(governance_policy or {})
 
     def _weighted_scores(self, snapshots: Iterable[ProviderSnapshot], pair: str) -> List[float]:
         cfg = self.policy.config_for_pair(pair)
@@ -107,6 +110,13 @@ class DecisionAggregator:
             anomaly_blocking=bool(anomaly["blocking"]),
             provider_gate_passed=bool(provider_gate["provider_gate_passed"]),
         )
+        governance = self.governance_gatekeeper.evaluate(
+            pair=pair,
+            provider_gate=provider_gate,
+            anomaly_guard=anomaly,
+            cooldown_guard=cooldown,
+            execution_policy=callback_policy,
+        )
 
         confidence = self._confidence_from_snapshots(snapshots, pair)
         risk_score = self._risk_score_from_snapshots(snapshots, pair)
@@ -121,6 +131,7 @@ class DecisionAggregator:
             and risk_score <= max_risk_score
         )
         entry_allowed = self.cooldown_guard.apply_entry_policy(pair, entry_allowed_raw)
+        entry_allowed = entry_allowed and bool(governance.get("approved", False))
 
         stake_multiplier = 1.0
         if confidence >= max(entry_min_confidence + 0.05, 0.80) and regime == "trend":
@@ -140,9 +151,10 @@ class DecisionAggregator:
         providers = self._provider_summary(snapshots)
 
         return {
-            "agent_enabled": provider_gate["provider_gate_passed"] and not anomaly["blocking"],
+            "agent_enabled": provider_gate["provider_gate_passed"] and not anomaly["blocking"] and bool(governance.get("approved", False)),
             "pair_enabled": True,
-            "governance_gate": "passed",
+            "governance_gate": "passed" if governance.get("approved", False) else "blocked",
+            "governance_gatekeeper": governance,
             "market_regime": regime,
             "confidence": confidence,
             "risk_score": risk_score,
@@ -152,13 +164,13 @@ class DecisionAggregator:
             "cooldown_guard": cooldown,
             "entry": {
                 "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
-                "entry_reason": "provider_weighted_alignment" if entry_allowed else "provider_or_anomaly_or_confidence_or_risk_or_cooldown_blocked",
+                "entry_reason": "governed_provider_alignment" if entry_allowed else "governance_or_provider_or_anomaly_or_confidence_or_risk_or_cooldown_blocked",
                 "entry_min_confidence": entry_min_confidence,
             },
             "stake": {
-                "stake_multiplier": stake_multiplier if callback_policy["stake"] else 1.0,
+                "stake_multiplier": stake_multiplier if callback_policy["stake"] and governance.get("approved", False) else 1.0,
                 "stake_cap_ratio": float(cfg.get("stake_cap_ratio", 0.12)),
-                "stake_reason": "weighted_provider_signal" if callback_policy["stake"] else "stake_disabled_by_execution_policy",
+                "stake_reason": "weighted_provider_signal" if callback_policy["stake"] and governance.get("approved", False) else "stake_disabled_by_governance_or_execution_policy",
             },
             "exit": {
                 "exit_signal": False,
@@ -171,7 +183,7 @@ class DecisionAggregator:
                 "agent_stoploss": agent_stoploss if callback_policy["stoploss"] else None,
             },
             "roi": {
-                "target_rr": target_rr if callback_policy["roi"] else None,
+                "target_rr": target_rr if callback_policy["roi"] and governance.get("approved", False) else None,
                 "roi_min_trade_duration": int(cfg.get("roi_min_trade_duration", 5)),
                 "callback_enabled": callback_policy["roi"],
             },
@@ -182,14 +194,16 @@ class DecisionAggregator:
                 "execution_snapshot": callback_policy,
                 "anomaly_snapshot": anomaly,
                 "cooldown_snapshot": cooldown,
+                "governance_snapshot": governance,
             },
+            "trading_mode": governance.get("trading_mode", "shadow_only"),
             "entry_allowed": entry_allowed and callback_policy["entry_confirm"],
-            "stake_multiplier": stake_multiplier if callback_policy["stake"] else 1.0,
+            "stake_multiplier": stake_multiplier if callback_policy["stake"] and governance.get("approved", False) else 1.0,
             "exit_signal": False,
             "exit_reason": None,
             "stoploss_mode": "tighten_only" if callback_policy["stoploss"] else "disabled",
             "agent_stoploss": agent_stoploss if callback_policy["stoploss"] else None,
-            "target_rr": target_rr if callback_policy["roi"] else None,
+            "target_rr": target_rr if callback_policy["roi"] and governance.get("approved", False) else None,
         }
 
     def build_decision_cache(self, pair_snapshots: Dict[str, List[ProviderSnapshot]]) -> Dict[str, Any]:
